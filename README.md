@@ -1,4 +1,4 @@
-# New Day
+# Faith New Tab
 
 > "New Day. God's Plan. Better You."
 
