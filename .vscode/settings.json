@@ -1,0 +1,20 @@
+{
+  "editor.tabSize": 2,
+  "editor.wordWrap": "wordWrapColumn",
+  "editor.wordWrapColumn": 140,
+  "editor.rulers": [140],
+  "editor.formatOnSave": true,
+  "prettier.useTabs": true,
+  "prettier.trailingComma": "none",
+  "prettier.tabWidth": 2,
+  "prettier.semi": true,
+  "prettier.bracketSpacing": true,
+  "prettier.arrowParens": "avoid",
+  "prettier.singleQuote": true,
+  "prettier.configPath": ".prettierrc",
+  "typescript.format.enable": true,
+  "typescript.autoClosingTags": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "cSpell.words": ["turbopack", "presign", "bytea", "bullmq", "Ciphertext", "healthcheck"]
+}
