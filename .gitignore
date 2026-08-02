@@ -11,6 +11,11 @@
 !.yarn/releases
 !.yarn/versions
 
+# build output
+.output
+.wxt
+*.zip
+
 # testing
 /coverage
 
@@ -32,12 +37,9 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
-.env*
+.env
 .env.local
 
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-
-.wxt
-*.zip
