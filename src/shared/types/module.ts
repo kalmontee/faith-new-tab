@@ -20,3 +20,9 @@ export interface ModuleConfig {
   id: string;
   enabled: boolean;
 }
+
+export interface CurrentVerse {
+  reference: string;
+  text: string;
+  translation: string;
+}
