@@ -6,7 +6,6 @@ import { Toggle } from '@/shared/ui/toggle';
 import { useSettingsStore } from '@/shared/store/settings-store';
 import { getAllModules } from '@/shared/lib/module-registry';
 import { DashboardBackground } from '@/app/dashboard/DashboardBackground';
-import { TranslationSelect } from './TranslationSelect';
 import { BackgroundPicker } from './BackgroundPicker';
 import { UnitToggle } from './UnitToggle';
 
@@ -27,13 +26,11 @@ export default function SettingsPage() {
     userName,
     moduleStates,
     temperatureUnit,
-    bibleTranslation,
     backgroundId,
     backgroundSolidColor,
     setUserName,
     setModuleEnabled,
     setTemperatureUnit,
-    setBibleTranslation,
     setBackgroundId,
     setBackgroundSolidColor,
   } = useSettingsStore();
@@ -89,20 +86,6 @@ export default function SettingsPage() {
                       'transition-colors'
                     )}
                   />
-                </SettingsRow>
-              </SettingsCard>
-            </section>
-
-            {/* Bible Translation */}
-            <section>
-              <SectionHeading>Bible Translation</SectionHeading>
-              <SettingsCard>
-                <SettingsRow>
-                  <div>
-                    <p className="text-sm font-medium text-white">Translation</p>
-                    <p className="text-xs text-white/40 mt-0.5">Select your preferred Bible version</p>
-                  </div>
-                  <TranslationSelect value={bibleTranslation} onChange={setBibleTranslation} />
                 </SettingsRow>
               </SettingsCard>
             </section>
