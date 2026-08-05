@@ -6,7 +6,7 @@ interface CardProps {
 }
 
 interface CardHeaderProps {
-  icon: string;
+  icon: React.ReactNode;
   label: string;
   className?: string;
 }
