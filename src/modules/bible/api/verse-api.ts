@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { DailyVerse } from '../types';
+import type { DailyVerse, VerseType } from '../types';
 
 // OurManna returns extra fields (verse url, notice); we only validate what we use.
 const OurMannaSchema = z.object({
@@ -16,8 +16,14 @@ const OurMannaSchema = z.object({
  * @description Fetches a verse from OurManna's API and returns it in the DailyVerse format.
  * @returns A Promise that resolves to a DailyVerse object.
  */
-async function fetchFromOurManna(): Promise<DailyVerse> {
-  const url: string = `${import.meta.env.VITE_OURMANNA_API_URL}?format=json&order=daily`;
+async function fetchFromOurManna(verseType: VerseType): Promise<DailyVerse> {
+  const baseUrl: string = import.meta.env.VITE_OURMANNA_API_URL;
+
+  if (!baseUrl) {
+    throw new Error('Missing VITE_OURMANNA_API_URL env var for OurManna requests.');
+  }
+
+  const url: string = `${baseUrl}?format=json&order=${verseType}`;
   const response = await fetch(url);
 
   if (!response.ok) {
@@ -36,7 +42,7 @@ async function fetchFromOurManna(): Promise<DailyVerse> {
 /**
  * @description Fetches OurManna's Verse of the Day (same verse for everyone, changes daily). */
 export function fetchDailyVerse(): Promise<DailyVerse> {
-  return fetchFromOurManna();
+  return fetchFromOurManna('daily');
 }
 
 /**
@@ -44,5 +50,5 @@ export function fetchDailyVerse(): Promise<DailyVerse> {
  * @deprecated The "New Verse" button is deprecated. Use fetchDailyVerse() instead.
  */
 export function fetchRandomVerse(): Promise<DailyVerse> {
-  return fetchFromOurManna();
+  return fetchFromOurManna('random');
 }

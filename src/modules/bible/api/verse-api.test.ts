@@ -16,8 +16,9 @@ const MOCK_OURMANNA_RESPONSE = {
 };
 
 describe('fetchDailyVerse', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.stubGlobal('fetch', vi.fn());
+    ({ fetchDailyVerse } = await import('./verse-api'));
   });
 
   afterEach(() => {
