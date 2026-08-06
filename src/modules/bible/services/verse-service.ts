@@ -1,17 +1,10 @@
+import { getTodayKey } from '@/shared/utils/date';
 import { fetchDailyVerse, fetchRandomVerse } from '../api/verse-api';
 import { getCachedVerse, setCachedVerse } from '../storage/verse-storage';
 import type { DailyVerse } from '../types';
 
 // Cap random re-rolls so the "New Verse" button never loops forever.
 const MAX_NEW_VERSE_ATTEMPTS = 3;
-
-function getTodayKey(): string {
-  const now = new Date();
-  const yyyy = now.getFullYear();
-  const mm = String(now.getMonth() + 1).padStart(2, '0');
-  const dd = String(now.getDate()).padStart(2, '0');
-  return `${yyyy}-${mm}-${dd}`;
-}
 
 export async function getDailyVerse(): Promise<DailyVerse> {
   const todayKey = getTodayKey();
