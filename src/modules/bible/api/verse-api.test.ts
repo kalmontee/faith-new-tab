@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { fetchDailyVerse } from './verse-api';
+
+let fetchDailyVerse: typeof import('./verse-api').fetchDailyVerse;
 
 // OurManna Verse of the Day response shape
 const MOCK_OURMANNA_RESPONSE = {
