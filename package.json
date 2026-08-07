@@ -28,6 +28,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@modyfi/vite-plugin-yaml": "^1.1.1",
     "@tailwindcss/vite": "^4.0.0",
     "@types/chrome": "^0.2.2",
     "@types/jsdom": "^28.0.3",
