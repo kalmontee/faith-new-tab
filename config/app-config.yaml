@@ -1,0 +1,30 @@
+app:
+  name: faith-new-tab
+  version: 1.0.0
+
+environments:
+  dev:
+    api_base_url: http://localhost:3000
+    log_level: debug
+    extension_name: 'Faith New Tab (Dev)'
+
+    featureToggles:
+      - name: enabledFooterIcons
+        description: Enables additional icons in the dashboard footer.
+        enabled: true
+      - name: enabledThemeToggle
+        description: Enables the theme toggle button in the dashboard header.
+        enabled: true
+
+  production:
+    api_base_url: https://api.newday.app
+    log_level: error
+    extension_name: 'Faith New Tab'
+
+    featureToggles:
+      - name: enabledFooterIcons
+        description: Enables additional icons in the dashboard footer.
+        enabled: false
+      - name: enabledThemeToggle
+        description: Enables the theme toggle button in the dashboard header.
+        enabled: false

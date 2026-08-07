@@ -1,6 +1,9 @@
 import { motion } from 'framer-motion';
 import { BookOpen, Calendar, Music, Sprout } from 'lucide-react';
+
 import { pickDaily } from '@/shared/lib/daily-rotation';
+import { Toggles } from '@/shared/enums/toggles';
+import { featureToggle } from '@/shared/feature-flags/flags';
 import { FOOTER_VERSES } from './footer-verses';
 
 function FooterIconButton({ label, children }: { label: string; children: React.ReactNode }) {
@@ -34,17 +37,19 @@ export function DashboardFooter() {
         </p>
       </div>
 
-      <div className="flex shrink-0 items-center gap-1">
-        <FooterIconButton label="Calendar">
-          <Calendar size={15} />
-        </FooterIconButton>
-        <FooterIconButton label="Music">
-          <Music size={15} />
-        </FooterIconButton>
-        <FooterIconButton label="Growth">
-          <Sprout size={15} />
-        </FooterIconButton>
-      </div>
+      {featureToggle.isEnabled(Toggles.enabledFooterIcons) && (
+        <div className="flex shrink-0 items-center gap-1">
+          <FooterIconButton label="Calendar">
+            <Calendar size={15} />
+          </FooterIconButton>
+          <FooterIconButton label="Music">
+            <Music size={15} />
+          </FooterIconButton>
+          <FooterIconButton label="Growth">
+            <Sprout size={15} />
+          </FooterIconButton>
+        </div>
+      )}
     </motion.footer>
   );
 }

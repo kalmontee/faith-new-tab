@@ -1,7 +1,14 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Sprout, Bookmark, Sun, Moon, Settings } from 'lucide-react';
+
 import { cn } from '@/shared/lib/utils';
+import { Toggles } from '@/shared/enums/toggles';
+import { featureToggle } from '@/shared/feature-flags/flags';
+
+interface DashboardHeaderProps {
+  onSettingsClick: () => void;
+}
 
 function HeaderIconButton({
   onClick,
@@ -31,10 +38,6 @@ function HeaderIconButton({
   );
 }
 
-interface DashboardHeaderProps {
-  onSettingsClick: () => void;
-}
-
 export function DashboardHeader({ onSettingsClick }: DashboardHeaderProps) {
   // Stub — wired up to the theme store once bullet 3 (theme system) is implemented
   const [isDark, setIsDark] = useState(true);
@@ -58,9 +61,11 @@ export function DashboardHeader({ onSettingsClick }: DashboardHeaderProps) {
           <Settings size={20} />
         </HeaderIconButton>
 
-        <HeaderIconButton label={isDark ? 'Switch to light mode' : 'Switch to dark mode'} onClick={() => setIsDark((d) => !d)}>
-          {isDark ? <Sun size={20} /> : <Moon size={20} />}
-        </HeaderIconButton>
+        {featureToggle.isEnabled(Toggles.enabledThemeToggle) && (
+          <HeaderIconButton label={isDark ? 'Switch to light mode' : 'Switch to dark mode'} onClick={() => setIsDark((d) => !d)}>
+            {isDark ? <Sun size={20} /> : <Moon size={20} />}
+          </HeaderIconButton>
+        )}
 
         <HeaderIconButton label="Bookmark verse">
           <Bookmark size={20} />
