@@ -31,8 +31,7 @@ function HeaderIconButton({
         'hover:bg-white/8 focus-visible:outline-none focus-visible:ring-2',
         'focus-visible:ring-[#d4a547] focus-visible:ring-offset-transparent',
         className
-      )}
-    >
+      )}>
       {children}
     </button>
   );
@@ -47,8 +46,7 @@ export function DashboardHeader({ onSettingsClick }: DashboardHeaderProps) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="flex items-center justify-between px-10 py-6 mb-2 w-full shrink-0"
-    >
+      className="flex items-center justify-around px-10 py-6 mb-2 w-full shrink-0">
       {/* App identity */}
       <div className="flex items-center gap-2.5">
         <Sprout size={20} className="text-[#d4a547]" aria-hidden />
