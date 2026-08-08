@@ -46,9 +46,9 @@ type RefreshInterval = 'daily' | 'hourly' | '30min' | 'never';
 | Grid area | Center, large card                                                                                                                                                                |
 | Refresh   | Daily                                                                                                                                                                             |
 | Network   | Yes (API fetch), cached offline                                                                                                                                                   |
-| Storage   | Cached verse, selected translation, favorites                                                                                                                                     |
-| Behavior  | Shows a daily verse with large quote typography, the reference below (e.g. "Philippians 4:13"), and a "New Verse" refresh button. Supports ESV, NIV, NKJV, KJV, NLT translations. |
-| Settings  | Translation selector                                                                                                                                                              |
+| Storage   | Cached verse (24h TTL)                                                                                                                                                            |
+| Behavior  | Shows OurManna's Verse of the Day with large quote typography, the reference below (e.g. "Philippians 4:13"), and a "New Verse" refresh button (random verse). Verses are NIV.    |
+| Settings  | None (OurManna serves NIV only)                                                                                                                                                   |
 
 ### Weather
 
