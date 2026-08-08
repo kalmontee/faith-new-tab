@@ -1,13 +1,21 @@
 ---
 name: test-driven-development
-description: Use when implementing any feature or bugfix, before writing implementation code
+description: Drives development with tests. Use when implementing any logic, fixing any bug, or changing any behavior. Use when you need to prove that code works, when a bug report arrives, or when you're about to modify existing functionality.
+metadata:
+  {
+    'claude':
+      {
+        'tags': ['testing', 'tdd', 'development', 'quality', 'red-green-refactor'],
+        'related_skills': ['systematic-debugging', 'plan', 'subagent-driven-development'],
+      },
+  }
 ---
 
 # Test-Driven Development (TDD)
 
 ## Overview
 
-Write the test first. Watch it fail. Write minimal code to pass.
+Write a failing test before writing the code that makes it pass. For bug fixes, reproduce the bug with a test before attempting a fix. Tests are proof — "seems right" is not done. A codebase with good tests is an AI agent's superpower; a codebase without tests is a liability.
 
 **Core principle:** If you didn't watch the test fail, you don't know if it tests the right thing.
 
