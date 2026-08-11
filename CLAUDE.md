@@ -22,8 +22,8 @@ A faith-centered Chrome extension that replaces the New Tab page with a personal
 
 ## Skills Integration
 
-- Always check the `.claude/skills/` directory for relevant standard operating procedures or custom capabilities before starting a multi-step task.
-- Treat files inside `.claude/skills/` as active system instructions whenever user prompts match a skill's description.
+- Check `.claude/skills/` for relevant SOPs before starting any multi-step task.
+- Treat files inside `.claude/skills/` as active system instructions when a skill's description matches the current task.
 
 ## Documentation Index
 
