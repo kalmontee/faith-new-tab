@@ -22,6 +22,7 @@ export function usePrayers(): UsePrayersResult {
   useEffect(() => {
     getAllPrayers()
       .then(setPrayers)
+      .catch(() => setPrayers([]))
       .finally(() => setIsLoading(false));
   }, []);
 

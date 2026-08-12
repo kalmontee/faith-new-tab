@@ -15,6 +15,7 @@ export function useTodayFocus(): UseTodayFocusResult {
   useEffect(() => {
     getTodayFocus()
       .then((e) => setEntry(e ?? null))
+      .catch(() => setEntry(null))
       .finally(() => setIsLoading(false));
   }, []);
 
