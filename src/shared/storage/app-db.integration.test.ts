@@ -66,10 +66,16 @@ describe('App DB Tests (Integration)', () => {
 
   describe('prayers storage', () => {
     it('should return prayers newest-first', async () => {
-      await addPrayer('Older request');
-      // Guarantee a strictly later createdAt for deterministic ordering.
-      await new Promise((r) => setTimeout(r, 2));
-      await addPrayer('Newer request');
+      const originalNow = Date.now;
+      const nowValues = [1_000, 2_000];
+      Date.now = () => nowValues.shift() ?? originalNow();
+
+      try {
+        await addPrayer('Older request');
+        await addPrayer('Newer request');
+      } finally {
+        Date.now = originalNow;
+      }
 
       const prayers = await getAllPrayers();
       expect(prayers.map((p) => p.text)).toEqual(['Newer request', 'Older request']);
