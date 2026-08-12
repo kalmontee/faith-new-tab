@@ -21,6 +21,7 @@ const weather: WeatherData = {
 };
 
 const COORDS = { latitude: 40.7, longitude: -74.0 };
+const originalGeolocationDescriptor = Object.getOwnPropertyDescriptor(navigator, 'geolocation');
 
 // Install a geolocation whose behaviour each test configures.
 function stubGeolocation(impl: (success: PositionCallback, error: PositionErrorCallback) => void) {
@@ -42,7 +43,11 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  vi.unstubAllGlobals();
+  if (originalGeolocationDescriptor) {
+    Object.defineProperty(navigator, 'geolocation', originalGeolocationDescriptor);
+  } else {
+    Object.defineProperty(navigator, 'geolocation', { value: undefined, configurable: true });
+  }
 });
 
 describe('useWeather', () => {
