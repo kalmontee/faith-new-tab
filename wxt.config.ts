@@ -8,8 +8,7 @@ export default defineConfig({
     name: 'New Day',
     description: "New Day. God's Plan. Better You.",
     version: '1.0.0',
-    permissions: ['storage', 'alarms', 'notifications'],
-    host_permissions: ['http://localhost:3000/*'],
+    permissions: ['storage'],
   },
   vite: () => ({
     plugins: [tailwindcss(), yaml()],
