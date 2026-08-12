@@ -15,6 +15,7 @@ export function useTodayGratitude(): UseTodayGratitudeResult {
   useEffect(() => {
     getTodayGratitude()
       .then((e) => setEntry(e ?? null))
+      .catch(() => setEntry(null))
       .finally(() => setIsLoading(false));
   }, []);
 
