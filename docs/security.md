@@ -2,7 +2,7 @@
 
 > Frontend security review of the Chrome MV3 extension, using the `frontend-security` skill's threat model adapted for a browser extension (no server, no cookies, no login session — see [Scope](#scope-note) below).
 
-Audited: 2026-08-12. Covers `src/`, `wxt.config.ts`, `.output/chrome-mv3/manifest.json`, and `pnpm audit`.
+Audited: 2026-08-12. Covers `src/`, `wxt.config.ts`, the generated MV3 manifest output (`.output/chrome-mv3/manifest.json` after `pnpm build`), and `pnpm audit`.
 
 ---
 
