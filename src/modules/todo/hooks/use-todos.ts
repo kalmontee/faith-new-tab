@@ -23,6 +23,7 @@ export function useTodos(): UseTodosResult {
   useEffect(() => {
     getAllTodos()
       .then(setTodos)
+      .catch(() => setTodos([]))
       .finally(() => setIsLoading(false));
   }, []);
 
