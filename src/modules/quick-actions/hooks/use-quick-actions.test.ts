@@ -23,6 +23,8 @@ const verse: CurrentVerse = {
 const formatted = `"${verse.text}" — ${verse.reference}`;
 
 const writeText = vi.fn();
+const originalClipboardDescriptor = Object.getOwnPropertyDescriptor(navigator, 'clipboard');
+const originalShareDescriptor = Object.getOwnPropertyDescriptor(navigator, 'share');
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -40,7 +42,17 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  vi.unstubAllGlobals();
+  if (originalClipboardDescriptor) {
+    Object.defineProperty(navigator, 'clipboard', originalClipboardDescriptor);
+  } else {
+    Object.defineProperty(navigator, 'clipboard', { value: undefined, configurable: true });
+  }
+
+  if (originalShareDescriptor) {
+    Object.defineProperty(navigator, 'share', originalShareDescriptor);
+  } else {
+    Object.defineProperty(navigator, 'share', { value: undefined, configurable: true });
+  }
 });
 
 describe('useQuickActions', () => {
