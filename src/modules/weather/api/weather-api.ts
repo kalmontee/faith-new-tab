@@ -1,7 +1,7 @@
 import type { TemperatureUnit, WeatherData } from '../types';
 import { NominatimSchema, OpenMeteoSchema, WMO_DESCRIPTIONS } from '../utils';
 
-const WEATHER_API_KEY: string = import.meta.env.VITE_WEATHER_API_KEY;
+const WEATHER_API_BASE_URL: string = import.meta.env.VITE_WEATHER_API_BASE_URL;
 const NOMINATIM_API: string = import.meta.env.VITE_NOMINATIM_API;
 
 async function reverseGeocode(lat: number, lng: number): Promise<string> {
@@ -26,7 +26,7 @@ async function reverseGeocode(lat: number, lng: number): Promise<string> {
 
 export async function fetchWeather(lat: number, lng: number, unit: TemperatureUnit): Promise<WeatherData> {
   const url =
-    `${WEATHER_API_KEY}` +
+    `${WEATHER_API_BASE_URL}` +
     `?latitude=${lat}&longitude=${lng}` +
     `&current=temperature_2m,weather_code` +
     `&daily=temperature_2m_max,temperature_2m_min` +
