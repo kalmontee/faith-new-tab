@@ -26,6 +26,7 @@ export interface TodoItem {
   text: string;
   completed: boolean;
   createdAt: number;
+  position: number;
 }
 
 export interface FavoriteVerse {
