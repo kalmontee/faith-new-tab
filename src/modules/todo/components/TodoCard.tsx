@@ -49,9 +49,9 @@ export default function TodoCard() {
               <TodoRow
                 key={todo.id}
                 todo={todo}
-                onToggle={() => toggleTodo(todo.id)}
-                onEdit={(text) => editTodo(todo.id, text)}
-                onRemove={() => removeTodo(todo.id)}
+                onToggle={() => void toggleTodo(todo.id).catch(() => {})}
+                onEdit={(text) => void editTodo(todo.id, text).catch(() => {})}
+                onRemove={() => void removeTodo(todo.id).catch(() => {})}
               />
             ))}
           </Reorder.Group>
