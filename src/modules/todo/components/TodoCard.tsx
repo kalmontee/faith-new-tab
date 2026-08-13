@@ -44,7 +44,7 @@ export default function TodoCard() {
         {!isLoading && todos.length === 0 && !isAdding && <p className="text-sm text-white/30 italic">Nothing on your list yet.</p>}
 
         {!isLoading && todos.length > 0 && (
-          <Reorder.Group axis="y" values={todos} onReorder={reorderTodos} className="space-y-2.5">
+          <Reorder.Group axis="y" values={todos} onReorder={(next) => void reorderTodos(next).catch(() => {})} className="space-y-2.5">
             {todos.map((todo) => (
               <TodoRow
                 key={todo.id}
