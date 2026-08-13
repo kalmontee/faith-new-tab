@@ -8,7 +8,8 @@ export async function getAllTodos(): Promise<TodoItem[]> {
 export async function addTodo(text: string): Promise<TodoItem> {
   const trimmed = text.trim();
   const createdAt = Date.now();
-  const position = await db.todos.count(); // append to the end of the list
+  const last = await db.todos.orderBy('position').last();
+  const position = last ? last.position + 1 : 0; // append after current max position
   const id = await db.todos.add({ text: trimmed, completed: false, createdAt, position } as TodoItem);
 
   return { id: id as number, text: trimmed, completed: false, createdAt, position };
