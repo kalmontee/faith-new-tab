@@ -94,7 +94,7 @@ type RefreshInterval = 'daily' | 'hourly' | '30min' | 'never';
 | Refresh   | Never (user-entered)                                                               |
 | Network   | No                                                                                 |
 | Storage   | IndexedDB — daily gratitude entries                                                |
-| Behavior  | A text area for today's gratitude entry. "Edit" link to modify. One entry per day. |
+| Behavior  | A text area for today's gratitude entry, one entry per day. The bottom action reads "＋ Add a Gratitude" (matching Prayer's "+ Add a Request") when today is empty and switches to "Edit" once an entry exists. Click away to save, Esc to cancel. |
 
 ### To-Do List
 
