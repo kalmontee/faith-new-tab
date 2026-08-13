@@ -40,15 +40,15 @@ type RefreshInterval = 'daily' | 'hourly' | '30min' | 'never';
 
 ### Bible Verse
 
-| Field     | Value                                                                                                                                                                             |
-| --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ID        | `verse`                                                                                                                                                                           |
-| Grid area | Center, large card                                                                                                                                                                |
-| Refresh   | Daily                                                                                                                                                                             |
-| Network   | Yes (API fetch), cached offline                                                                                                                                                   |
-| Storage   | Cached verse (24h TTL)                                                                                                                                                            |
-| Behavior  | Shows OurManna's Verse of the Day with large quote typography, the reference below (e.g. "Philippians 4:13"), and a "New Verse" refresh button (random verse). Verses are NIV.    |
-| Settings  | None (OurManna serves NIV only)                                                                                                                                                   |
+| Field     | Value                                                                                                                                                                          |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| ID        | `verse`                                                                                                                                                                        |
+| Grid area | Center, large card                                                                                                                                                             |
+| Refresh   | Daily                                                                                                                                                                          |
+| Network   | Yes (API fetch), cached offline                                                                                                                                                |
+| Storage   | Cached verse (24h TTL)                                                                                                                                                         |
+| Behavior  | Shows OurManna's Verse of the Day with large quote typography, the reference below (e.g. "Philippians 4:13"), and a "New Verse" refresh button (random verse). Verses are NIV. |
+| Settings  | None (OurManna serves NIV only)                                                                                                                                                |
 
 ### Weather
 
@@ -98,14 +98,14 @@ type RefreshInterval = 'daily' | 'hourly' | '30min' | 'never';
 
 ### To-Do List
 
-| Field     | Value                                                                                                    |
-| --------- | -------------------------------------------------------------------------------------------------------- |
-| ID        | `todo`                                                                                                   |
-| Grid area | Bottom left card                                                                                         |
-| Refresh   | Never (user-entered)                                                                                     |
-| Network   | No                                                                                                       |
-| Storage   | IndexedDB — todo items with completion state                                                             |
-| Behavior  | Checkbox list. "+" button to add items. Completed items show a checkmark. Items persist across sessions. |
+| Field     | Value                                                                                                                                                                                                                                                                  |
+| --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ID        | `todo`                                                                                                                                                                                                                                                                 |
+| Grid area | Bottom left card                                                                                                                                                                                                                                                       |
+| Refresh   | Never (user-entered)                                                                                                                                                                                                                                                   |
+| Network   | No                                                                                                                                                                                                                                                                     |
+| Storage   | IndexedDB — todo items with completion state and a user-controlled `position` (drag-and-drop order)                                                                                                                                                                    |
+| Behavior  | Checkbox list. "+" button to add items (appended to the end). Hovering a row reveals a pencil (inline edit — Enter/blur saves, Escape cancels) and an "✕" remove button. A grip handle drags rows to reorder (framer-motion `Reorder`). Items persist across sessions. |
 
 ### Inspirational Quote
 
