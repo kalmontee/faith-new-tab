@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { Reorder } from 'framer-motion';
 import { ListTodo, Plus } from 'lucide-react';
 
 import { useTodos } from '../hooks/use-todos';
@@ -8,7 +9,7 @@ import { TodoRow } from './TodoRow';
 import { TodoSkeleton } from './Skeleton';
 
 export default function TodoCard() {
-  const { todos, isLoading, addTodo, toggleTodo, removeTodo } = useTodos();
+  const { todos, isLoading, addTodo, editTodo, toggleTodo, removeTodo, reorderTodos } = useTodos();
   const [isAdding, setIsAdding] = useState(false);
   const [draft, setDraft] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -43,11 +44,17 @@ export default function TodoCard() {
         {!isLoading && todos.length === 0 && !isAdding && <p className="text-sm text-white/30 italic">Nothing on your list yet.</p>}
 
         {!isLoading && todos.length > 0 && (
-          <ul className="space-y-2.5">
+          <Reorder.Group axis="y" values={todos} onReorder={reorderTodos} className="space-y-2.5">
             {todos.map((todo) => (
-              <TodoRow key={todo.id} todo={todo} onToggle={() => toggleTodo(todo.id)} onRemove={() => removeTodo(todo.id)} />
+              <TodoRow
+                key={todo.id}
+                todo={todo}
+                onToggle={() => toggleTodo(todo.id)}
+                onEdit={(text) => editTodo(todo.id, text)}
+                onRemove={() => removeTodo(todo.id)}
+              />
             ))}
-          </ul>
+          </Reorder.Group>
         )}
       </div>
 
