@@ -9,21 +9,25 @@ import type { TodoItem } from '@/shared/types/table';
 vi.mock('../services/todo-service', () => ({
   getAllTodos: vi.fn(),
   addTodo: vi.fn(),
+  editTodo: vi.fn(),
   toggleTodo: vi.fn(),
   removeTodo: vi.fn(),
+  reorderTodos: vi.fn(),
 }));
 
-import { getAllTodos, addTodo, toggleTodo, removeTodo } from '../services/todo-service';
+import { getAllTodos, addTodo, editTodo, toggleTodo, removeTodo, reorderTodos } from '../services/todo-service';
 
-const todoA: TodoItem = { id: 1, text: 'Read Psalm 23', completed: false, createdAt: 1_000 };
-const todoB: TodoItem = { id: 2, text: 'Call a friend', completed: false, createdAt: 2_000 };
+const todoA: TodoItem = { id: 1, text: 'Read Psalm 23', completed: false, createdAt: 1_000, position: 0 };
+const todoB: TodoItem = { id: 2, text: 'Call a friend', completed: false, createdAt: 2_000, position: 1 };
 
 beforeEach(() => {
   vi.clearAllMocks();
   vi.mocked(getAllTodos).mockResolvedValue([]);
   vi.mocked(addTodo).mockResolvedValue(todoB);
+  vi.mocked(editTodo).mockResolvedValue();
   vi.mocked(toggleTodo).mockResolvedValue();
   vi.mocked(removeTodo).mockResolvedValue();
+  vi.mocked(reorderTodos).mockResolvedValue();
 });
 
 describe('useTodos', () => {
@@ -85,6 +89,35 @@ describe('useTodos', () => {
     expect(result.current.todos).toEqual([]);
   });
 
+  it('should edit a todo, then re-read the list', async () => {
+    vi.mocked(getAllTodos).mockResolvedValue([todoA]);
+    const { result } = renderHook(() => useTodos());
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    vi.mocked(getAllTodos).mockResolvedValue([{ ...todoA, text: 'Read Psalm 23 aloud' }]);
+    await act(async () => {
+      await result.current.editTodo(1, 'Read Psalm 23 aloud');
+    });
+
+    expect(editTodo).toHaveBeenCalledWith(1, 'Read Psalm 23 aloud');
+    expect(result.current.todos[0]?.text).toBe('Read Psalm 23 aloud');
+  });
+
+  it('should apply a reorder optimistically and persist the new id order', async () => {
+    vi.mocked(getAllTodos).mockResolvedValue([todoA, todoB]);
+    const { result } = renderHook(() => useTodos());
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    // getAllTodos is NOT re-stubbed: a successful reorder must keep the
+    // optimistic order without re-reading (avoids a visible flicker mid-drag).
+    await act(async () => {
+      await result.current.reorderTodos([todoB, todoA]);
+    });
+
+    expect(reorderTodos).toHaveBeenCalledWith([2, 1]);
+    expect(result.current.todos).toEqual([todoB, todoA]);
+  });
+
   // ── Failure paths ─────────────────────────────────────────────────────────
 
   it('should still clear the loading flag when the initial fetch rejects', async () => {
@@ -117,5 +150,19 @@ describe('useTodos', () => {
     // getAllTodos was called once on mount and must not be called again after the failure.
     expect(getAllTodos).toHaveBeenCalledTimes(1);
     expect(result.current.todos).toEqual([todoA]);
+  });
+
+  it('should roll back to the persisted order when a reorder fails', async () => {
+    vi.mocked(getAllTodos).mockResolvedValue([todoA, todoB]);
+    const { result } = renderHook(() => useTodos());
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    vi.mocked(reorderTodos).mockRejectedValue(new Error('write failed'));
+    await act(async () => {
+      await expect(result.current.reorderTodos([todoB, todoA])).rejects.toThrow('write failed');
+    });
+
+    // The optimistic swap is undone by re-reading the true order from storage.
+    expect(result.current.todos).toEqual([todoA, todoB]);
   });
 });

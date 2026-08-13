@@ -27,6 +27,16 @@ class AppDatabase extends Dexie {
       todos: '++id, createdAt, completed',
       favorites: '++id, &reference, createdAt',
     });
+
+    // v4: add position to todos
+    this.version(4)
+      .stores({
+        todos: '++id, createdAt, completed, position',
+      })
+      .upgrade(async (tx) => {
+        const todos = await tx.table<TodoItem, number>('todos').orderBy('createdAt').toArray();
+        await Promise.all(todos.map((todo, index) => tx.table('todos').update(todo.id, { position: index })));
+      });
   }
 }
 

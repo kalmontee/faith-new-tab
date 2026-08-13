@@ -1,13 +1,17 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { getAllTodos, addTodo, toggleTodo, removeTodo } from './todo-service';
+import { getAllTodos, addTodo, editTodo, toggleTodo, removeTodo, reorderTodos } from './todo-service';
 import type { TodoItem } from '@/shared/types/table';
 
 // Mock the Dexie database — getAllTodos uses orderBy().toArray(),
-// toggleTodo uses get() + update(), removeTodo uses delete().
+// addTodo uses count() + add(), toggleTodo/editTodo use get()/update(),
+// removeTodo uses delete(), reorderTodos batches update() inside transaction().
 vi.mock('@/shared/storage/app-db', () => ({
   db: {
+    // transaction(mode, table, cb) — invoke the callback so batched writes run.
+    transaction: vi.fn((_mode: unknown, _table: unknown, cb: () => unknown) => cb()),
     todos: {
       orderBy: vi.fn(),
+      count: vi.fn(),
       add: vi.fn(),
       get: vi.fn(),
       update: vi.fn(),
@@ -25,6 +29,7 @@ const sampleTodo: TodoItem = {
   text: 'Read Psalm 23',
   completed: false,
   createdAt: 1_000_000,
+  position: 0,
 };
 
 function mockOrderByChain(result: TodoItem[]) {
@@ -40,7 +45,7 @@ function mockOrderByChain(result: TodoItem[]) {
 describe('getAllTodos', () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it('returns all todos in insertion order', async () => {
+  it('returns all todos in position order', async () => {
     mockOrderByChain([sampleTodo]);
     expect(await getAllTodos()).toEqual([sampleTodo]);
   });
@@ -50,10 +55,10 @@ describe('getAllTodos', () => {
     expect(await getAllTodos()).toEqual([]);
   });
 
-  it('orders by createdAt', async () => {
+  it('orders by the user-controlled position field', async () => {
     mockOrderByChain([]);
     await getAllTodos();
-    expect(db.todos.orderBy).toHaveBeenCalledWith('createdAt');
+    expect(db.todos.orderBy).toHaveBeenCalledWith('position');
   });
 });
 
@@ -64,6 +69,7 @@ describe('addTodo', () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date(2025, 5, 15, 12, 0, 0));
     vi.clearAllMocks();
+    vi.mocked(db.todos.count).mockResolvedValue(0);
     vi.mocked(db.todos.add).mockResolvedValue(42 as unknown as number);
   });
 
@@ -89,6 +95,34 @@ describe('addTodo', () => {
   it('trims whitespace from the todo text', async () => {
     await addTodo('  Trim me  ');
     expect(db.todos.add).toHaveBeenCalledWith(expect.objectContaining({ text: 'Trim me' }));
+  });
+
+  it('appends the new todo at the end using the current count as its position', async () => {
+    vi.mocked(db.todos.count).mockResolvedValue(3);
+    const result = await addTodo('Next up');
+    expect(db.todos.add).toHaveBeenCalledWith(expect.objectContaining({ position: 3 }));
+    expect(result.position).toBe(3);
+  });
+});
+
+// ── editTodo ─────────────────────────────────────────────────────────────────
+
+describe('editTodo', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('updates the text for the given id', async () => {
+    await editTodo(1, 'Read Psalm 23 aloud');
+    expect(db.todos.update).toHaveBeenCalledWith(1, { text: 'Read Psalm 23 aloud' });
+  });
+
+  it('trims whitespace before saving', async () => {
+    await editTodo(1, '  Trim me  ');
+    expect(db.todos.update).toHaveBeenCalledWith(1, { text: 'Trim me' });
+  });
+
+  it('ignores an empty edit rather than persisting a blank todo', async () => {
+    await editTodo(1, '   ');
+    expect(db.todos.update).not.toHaveBeenCalled();
   });
 });
 
@@ -124,5 +158,29 @@ describe('removeTodo', () => {
   it('deletes the todo with the given id', async () => {
     await removeTodo(1);
     expect(db.todos.delete).toHaveBeenCalledWith(1);
+  });
+});
+
+// ── reorderTodos ─────────────────────────────────────────────────────────────
+
+describe('reorderTodos', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('persists each id’s new position from its index in the ordered list', async () => {
+    await reorderTodos([3, 1, 2]);
+
+    expect(db.todos.update).toHaveBeenCalledWith(3, { position: 0 });
+    expect(db.todos.update).toHaveBeenCalledWith(1, { position: 1 });
+    expect(db.todos.update).toHaveBeenCalledWith(2, { position: 2 });
+  });
+
+  it('writes the reordering inside a single read-write transaction', async () => {
+    await reorderTodos([1, 2]);
+    expect(db.transaction).toHaveBeenCalledWith('rw', db.todos, expect.any(Function));
+  });
+
+  it('does nothing when given an empty list', async () => {
+    await reorderTodos([]);
+    expect(db.todos.update).not.toHaveBeenCalled();
   });
 });
