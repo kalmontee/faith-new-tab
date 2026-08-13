@@ -8,7 +8,7 @@ import { db } from './app-db';
 // src/test/setup.ts). It proves that data written by a service is actually
 // persisted, indexed, and read back correctly through the database.
 
-import { getAllTodos, addTodo, toggleTodo, removeTodo } from '@/modules/todo/services/todo-service';
+import { getAllTodos, addTodo, editTodo, toggleTodo, removeTodo, reorderTodos } from '@/modules/todo/services/todo-service';
 import { getAllPrayers, addPrayer, toggleAnswered, removePrayer } from '@/modules/prayer/services/prayer-service';
 import { getTodayFocus, saveFocus } from '@/modules/focus/services/focus-service';
 import { getTodayGratitude, saveGratitude } from '@/modules/gratitude/services/gratitude-service';
@@ -23,8 +23,8 @@ beforeEach(async () => {
 
 describe('App DB Tests (Integration)', () => {
   describe('app database schema', () => {
-    it('should expose all five module tables at schema version 3', () => {
-      expect(db.verno).toBe(3);
+    it('should expose all five module tables at schema version 4', () => {
+      expect(db.verno).toBe(4);
       const names = db.tables.map((t) => t.name).sort();
       expect(names).toEqual(['favorites', 'focus', 'gratitude', 'prayers', 'todos']);
     });
@@ -33,14 +33,35 @@ describe('App DB Tests (Integration)', () => {
   // ── Todos ─────────────────────────────────────────────────────────────────
 
   describe('todos storage', () => {
-    it('should persist an added todo and read it back by createdAt order', async () => {
+    it('should persist added todos and read them back in appended position order', async () => {
       const first = await addTodo('Read Psalm 23');
       const second = await addTodo('Call a friend');
 
       const todos = await getAllTodos();
       expect(todos.map((t) => t.text)).toEqual(['Read Psalm 23', 'Call a friend']);
+      expect(todos.map((t) => t.position)).toEqual([0, 1]);
       expect(todos[0]?.id).toBe(first.id);
       expect(todos[1]?.id).toBe(second.id);
+    });
+
+    it('should persist edited text in the database', async () => {
+      const todo = await addTodo('Read Psalm 23');
+      await editTodo(todo.id, 'Read Psalm 23 aloud');
+
+      const stored = await db.todos.get(todo.id);
+      expect(stored?.text).toBe('Read Psalm 23 aloud');
+    });
+
+    it('should persist a new order so the list reads back reordered', async () => {
+      const first = await addTodo('Read Psalm 23');
+      const second = await addTodo('Call a friend');
+      const third = await addTodo('Write in journal');
+
+      await reorderTodos([third.id, first.id, second.id]);
+
+      const todos = await getAllTodos();
+      expect(todos.map((t) => t.text)).toEqual(['Write in journal', 'Read Psalm 23', 'Call a friend']);
+      expect(todos.map((t) => t.position)).toEqual([0, 1, 2]);
     });
 
     it('should flip the completed flag in the database when toggled', async () => {
