@@ -1,15 +1,27 @@
 import { MotionConfig } from 'framer-motion';
+import { Suspense, lazy } from 'react';
 
 import Dashboard from './dashboard/Dashboard';
 import { DashboardBackground } from './dashboard/DashboardBackground';
+import { useViewStore } from '@/shared/store/view-store';
 
-// Persistent app shell. The background lives here — not inside a view — so it
-// stays mounted across view changes and never flashes when the content swaps.
+// Code-split so Settings stays out of the New Tab critical bundle.
+const SettingsPage = lazy(() => import('./settings/SettingsPage'));
+
 export function App() {
+  const view = useViewStore((s) => s.view);
+  const closeSettings = useViewStore((s) => s.closeSettings);
+
   return (
     <MotionConfig reducedMotion="user">
       <DashboardBackground>
-        <Dashboard />
+        {view === 'settings' ? (
+          <Suspense fallback={null}>
+            <SettingsPage onBack={closeSettings} />
+          </Suspense>
+        ) : (
+          <Dashboard />
+        )}
       </DashboardBackground>
     </MotionConfig>
   );

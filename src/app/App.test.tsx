@@ -1,17 +1,23 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 
 import { App } from './App';
 import Dashboard from './dashboard/Dashboard';
+import { useViewStore } from '@/shared/store/view-store';
 import { createQueryWrapper } from '@/test/test-utils';
 
-// The persistent background is the one element carrying an inline gradient
-// (the dark overlay above it is a class, not an inline style).
-function gradientLayers(container: HTMLElement): NodeListOf<Element> {
-  return container.querySelectorAll('[style*="linear-gradient"]');
+// The persistent background element rendered by DashboardBackground. Selected
+// by data hook rather than gradient string, since BackgroundPicker swatches
+// also carry inline gradients.
+function backgroundLayers(container: HTMLElement): NodeListOf<Element> {
+  return container.querySelectorAll('[data-app-background]');
 }
 
 describe('App shell', () => {
+  beforeEach(() => {
+    useViewStore.setState({ view: 'dashboard' });
+  });
+
   it('should render the dashboard content', () => {
     render(<App />, { wrapper: createQueryWrapper() });
     expect(screen.getByText(/God's Plan\. Better You\./i)).toBeTruthy();
@@ -19,13 +25,25 @@ describe('App shell', () => {
 
   it('should render exactly one persistent background around the content', () => {
     const { container } = render(<App />, { wrapper: createQueryWrapper() });
-    expect(gradientLayers(container)).toHaveLength(1);
+    expect(backgroundLayers(container)).toHaveLength(1);
   });
 
   it('should render the dashboard view without a background of its own', () => {
-    // Task 1 lifts the background up into the shell, so Dashboard on its own
-    // must not paint one — otherwise the shell would stack two backgrounds.
     const { container } = render(<Dashboard />, { wrapper: createQueryWrapper() });
-    expect(gradientLayers(container)).toHaveLength(0);
+    expect(backgroundLayers(container)).toHaveLength(0);
+  });
+
+  it('should show the settings view when the view store opens settings', async () => {
+    useViewStore.setState({ view: 'settings' });
+    render(<App />, { wrapper: createQueryWrapper() });
+    expect(await screen.findByRole('heading', { name: 'Settings' })).toBeTruthy();
+  });
+
+  it('should keep exactly one background when swapped to the settings view', async () => {
+    useViewStore.setState({ view: 'settings' });
+    const { container } = render(<App />, { wrapper: createQueryWrapper() });
+    // Wait for the lazy Settings chunk before asserting the background survived.
+    await screen.findByRole('heading', { name: 'Settings' });
+    expect(backgroundLayers(container)).toHaveLength(1);
   });
 });

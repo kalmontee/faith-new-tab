@@ -3,13 +3,10 @@ import { Fragment } from 'react';
 import { DashboardHeader } from './DashboardHeader';
 import { DashboardFooter } from './DashboardFooter';
 import { ModuleRenderer } from './ModuleRenderer';
+import { useViewStore } from '@/shared/store/view-store';
 
-// Background and motion config live in the app shell (see App.tsx); this view
-// renders only its own content.
 export default function Dashboard() {
-  function openSettings() {
-    window.location.href = chrome.runtime.getURL('settings.html');
-  }
+  const openSettings = useViewStore((s) => s.openSettings);
 
   return (
     <Fragment>
