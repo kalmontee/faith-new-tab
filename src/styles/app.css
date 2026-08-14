@@ -84,6 +84,17 @@ body {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
+  }
+}
+
+/* Cross-fade between dashboard and settings views (see view-transition.ts) */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.25s;
 }
 
 /* Dashboard 3-column grid — see docs/design-system.md "Layout Grid" */
