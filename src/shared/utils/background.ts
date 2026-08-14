@@ -1,11 +1,4 @@
-export type BackgroundId = 'sunrise' | 'ocean' | 'forest' | 'night-sky' | 'desert' | 'aurora' | 'solid';
-
-export interface BackgroundPreset {
-  id: BackgroundId;
-  label: string;
-  gradient: string;
-  preview: string;
-}
+import type { BackgroundPreset, BackgroundId } from '../types/background-presets';
 
 export const BACKGROUND_PRESETS: BackgroundPreset[] = [
   {

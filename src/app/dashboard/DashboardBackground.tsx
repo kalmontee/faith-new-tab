@@ -1,5 +1,5 @@
 import { useSettingsStore } from '@/shared/store/settings-store';
-import { getBackgroundStyle } from '@/shared/types/background';
+import { getBackgroundStyle } from '@/shared/utils/background';
 
 interface DashboardBackgroundProps {
   children: React.ReactNode;
