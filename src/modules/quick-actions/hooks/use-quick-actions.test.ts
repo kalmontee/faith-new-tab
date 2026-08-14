@@ -3,6 +3,7 @@ import { renderHook, act, waitFor } from '@testing-library/react';
 
 import { useQuickActions } from './use-quick-actions';
 import { useCurrentVerseStore } from '@/shared/store/current-verse-store';
+import { useViewStore } from '@/shared/store/view-store';
 import type { CurrentVerse } from '@/shared/types/module';
 
 // Unit test: the hook reads the "verse on screen" from the current-verse store,
@@ -135,27 +136,13 @@ describe('useQuickActions', () => {
     expect(result.current.isFavorite).toBe(true);
   });
 
-  it('should open the settings page via the extension URL', () => {
-    const originalLocation = window.location;
-    Object.defineProperty(window, 'location', {
-      value: { href: '' },
-      writable: true,
-      configurable: true,
-    });
+  it('should open the settings view via the view store', () => {
+    useViewStore.setState({ view: 'dashboard' });
 
-    try {
-      const { result } = renderHook(() => useQuickActions());
-      act(() => result.current.openSettings());
+    const { result } = renderHook(() => useQuickActions());
+    act(() => result.current.openSettings());
 
-      expect(chrome.runtime.getURL).toHaveBeenCalledWith('settings.html');
-      expect(window.location.href).toBe('chrome-extension://test-id/settings.html');
-    } finally {
-      Object.defineProperty(window, 'location', {
-        value: originalLocation,
-        writable: true,
-        configurable: true,
-      });
-    }
+    expect(useViewStore.getState().view).toBe('settings');
   });
 
   it('should propagate a clipboard write failure', async () => {
