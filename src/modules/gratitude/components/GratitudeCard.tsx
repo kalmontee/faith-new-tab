@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, Fragment } from 'react';
-import { Heart } from 'lucide-react';
+import { Heart, Plus } from 'lucide-react';
 
 import { Card, CardHeader } from '@/shared/ui/card';
 import { cn } from '@/shared/lib/utils';
@@ -38,7 +38,10 @@ export default function GratitudeCard() {
 
       {!isLoading && !isEditing && (
         <Fragment>
-          <button onClick={startEditing} className="w-full text-left" aria-label="Edit today's gratitude">
+          <button
+            onClick={startEditing}
+            className="w-full text-left"
+            aria-label={entry?.entry ? "Edit today's gratitude" : "Add today's gratitude"}>
             {entry?.entry ? (
               <p className="text-sm text-white/90 leading-relaxed whitespace-pre-wrap">{entry.entry}</p>
             ) : (
@@ -46,8 +49,17 @@ export default function GratitudeCard() {
             )}
           </button>
           <div className="mt-auto pt-2 flex border-t border-white/15">
-            <button onClick={startEditing} className="text-[13px] font-medium text-[#6bbf7b] hover:text-[#84cf91] transition-colors">
-              Edit
+            <button
+              onClick={startEditing}
+              className={cn('flex items-center gap-1.5 text-[13px] font-medium transition-colors', 'text-[#6bbf7b] hover:text-[#84cf91]')}>
+              {entry?.entry ? (
+                'Edit'
+              ) : (
+                <Fragment>
+                  <Plus size={14} />
+                  Add a Gratitude
+                </Fragment>
+              )}
             </button>
           </div>
         </Fragment>
@@ -60,8 +72,7 @@ export default function GratitudeCard() {
             if (!e.currentTarget.contains(e.relatedTarget as Node)) {
               handleSave();
             }
-          }}
-        >
+          }}>
           <textarea
             ref={textareaRef}
             value={draft}

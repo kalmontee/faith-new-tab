@@ -2,16 +2,12 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { getAllTodos, addTodo, editTodo, toggleTodo, removeTodo, reorderTodos } from './todo-service';
 import type { TodoItem } from '@/shared/types/table';
 
-// Mock the Dexie database — getAllTodos uses orderBy().toArray(),
-// addTodo uses count() + add(), toggleTodo/editTodo use get()/update(),
-// removeTodo uses delete(), reorderTodos batches update() inside transaction().
 vi.mock('@/shared/storage/app-db', () => ({
   db: {
     // transaction(mode, table, cb) — invoke the callback so batched writes run.
     transaction: vi.fn((_mode: unknown, _table: unknown, cb: () => unknown) => cb()),
     todos: {
       orderBy: vi.fn(),
-      count: vi.fn(),
       add: vi.fn(),
       get: vi.fn(),
       update: vi.fn(),
@@ -38,6 +34,15 @@ function mockOrderByChain(result: TodoItem[]) {
     toArray: mockToArray,
   } as unknown as ReturnType<typeof db.todos.orderBy>);
   return mockToArray;
+}
+
+// addTodo derives the next position from the highest existing one via orderBy().last().
+function mockOrderByLast(result: TodoItem | undefined) {
+  const mockLast = vi.fn().mockResolvedValue(result);
+  vi.mocked(db.todos.orderBy).mockReturnValue({
+    last: mockLast,
+  } as unknown as ReturnType<typeof db.todos.orderBy>);
+  return mockLast;
 }
 
 // ── getAllTodos ──────────────────────────────────────────────────────────────
@@ -69,7 +74,7 @@ describe('addTodo', () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date(2025, 5, 15, 12, 0, 0));
     vi.clearAllMocks();
-    vi.mocked(db.todos.count).mockResolvedValue(0);
+    mockOrderByLast(undefined); // empty list by default
     vi.mocked(db.todos.add).mockResolvedValue(42 as unknown as number);
   });
 
@@ -97,11 +102,18 @@ describe('addTodo', () => {
     expect(db.todos.add).toHaveBeenCalledWith(expect.objectContaining({ text: 'Trim me' }));
   });
 
-  it('appends the new todo at the end using the current count as its position', async () => {
-    vi.mocked(db.todos.count).mockResolvedValue(3);
+  it('appends the new todo one past the highest existing position', async () => {
+    mockOrderByLast({ ...sampleTodo, position: 2 });
     const result = await addTodo('Next up');
     expect(db.todos.add).toHaveBeenCalledWith(expect.objectContaining({ position: 3 }));
     expect(result.position).toBe(3);
+  });
+
+  it('starts the first todo at position 0 when the list is empty', async () => {
+    mockOrderByLast(undefined);
+    const result = await addTodo('First');
+    expect(db.todos.add).toHaveBeenCalledWith(expect.objectContaining({ position: 0 }));
+    expect(result.position).toBe(0);
   });
 });
 
