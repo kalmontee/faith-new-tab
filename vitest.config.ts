@@ -1,7 +1,11 @@
 import { defineConfig } from 'vitest/config';
+import yaml from '@modyfi/vite-plugin-yaml';
 import path from 'path';
 
 export default defineConfig({
+  // Mirror the YAML plugin from wxt.config.ts so `.yaml` imports (e.g. the
+  // feature-flags app-config) resolve in tests the same way they do in the build.
+  plugins: [yaml()],
   test: {
     environment: 'jsdom',
     globals: true,

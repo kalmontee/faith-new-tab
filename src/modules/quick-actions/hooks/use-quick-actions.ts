@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useCurrentVerseStore } from '@/shared/store/current-verse-store';
+import { useViewStore } from '@/shared/store/view-store';
 import { type CurrentVerse } from '@/shared/types/module';
 import { isFavorited, toggleFavorite as toggleFavoriteInStore } from '../services/favorites-service';
 
@@ -51,7 +52,7 @@ export function useQuickActions(): UseQuickActionsResult {
   }, [verse]);
 
   const openSettings = useCallback(() => {
-    window.location.href = chrome.runtime.getURL('settings.html');
+    useViewStore.getState().openSettings();
   }, []);
 
   return { hasVerse: !!verse, isFavorite, copyVerse, shareVerse, toggleFavorite, openSettings };
