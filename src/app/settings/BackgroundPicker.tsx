@@ -1,7 +1,8 @@
 import { Check } from 'lucide-react';
 
 import { cn } from '@/shared/lib/utils';
-import { BACKGROUND_PRESETS, type BackgroundId } from '@/shared/types/background';
+import { BACKGROUND_PRESETS } from '@/shared/utils/background';
+import { type BackgroundId } from '@/shared/types/background-presets';
 
 export function BackgroundPicker({
   value,
@@ -26,8 +27,7 @@ export function BackgroundPicker({
               value === preset.id ? 'border-[#d4a547]' : 'border-white/10 hover:border-white/25'
             )}
             style={{ background: preset.gradient }}
-            aria-label={preset.label}
-          >
+            aria-label={preset.label}>
             {value === preset.id && (
               <div className="absolute inset-0 flex items-center justify-center">
                 <Check size={16} className="text-white drop-shadow-md" />
@@ -45,8 +45,7 @@ export function BackgroundPicker({
             value === 'solid' ? 'border-[#d4a547]' : 'border-white/10 hover:border-white/25'
           )}
           style={{ background: solidColor }}
-          aria-label="Solid color"
-        >
+          aria-label="Solid color">
           {value === 'solid' && (
             <div className="absolute inset-0 flex items-center justify-center">
               <Check size={16} className="text-white drop-shadow-md" />
