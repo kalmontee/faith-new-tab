@@ -71,8 +71,6 @@ cp .env.example .env
 VITE_BIBLE_API_KEY=your_key_here
 ```
 
-Without a key, ESV and NKJV silently fall back to KJV.
-
 ### Run in development
 
 ```bash
@@ -94,39 +92,19 @@ Changes to source files hot-reload automatically.
 ## Commands
 
 ```bash
-pnpm dev              # Start the WXT dev server with hot reload
-pnpm build             # Production build
+pnpm dev                # Start the WXT dev server with hot reload
+pnpm build              # Production build
 pnpm zip                # Package the extension as a .zip for the Chrome Web Store
 
 pnpm lint               # ESLint
 pnpm format             # Prettier — writes formatting fixes
-pnpm test               # Vitest unit tests
 pnpm typecheck          # tsc --noEmit
+
+pnpm test:coverage
+pnpm test               # Vitest unit tests
+
+pnpm prepare            # Husky
 ```
-
----
-
-## Project Structure
-
-```
-src/
-  app/                  # Page-level shells
-    dashboard/          # New Tab main view (header, footer, grid, background)
-    settings/           # Extension settings page
-  modules/               # Each dashboard widget is self-contained
-    bible/  weather/  clock/  todo/
-    gratitude/  prayer/  focus/  quotes/  quick-actions/
-  shared/                # Cross-cutting code — never imported *between* modules
-    ui/                  # Card, Toggle, and other shared primitives
-    lib/                 # module-registry, daily-rotation, utils
-    storage/             # StorageService abstraction (Chrome Storage + IndexedDB)
-    store/               # Zustand stores (settings, current verse)
-    types/                # Shared TypeScript types
-  entrypoints/            # WXT entrypoints — background worker, newtab, settings
-  styles/                 # Global Tailwind entry (app.css)
-```
-
-Each module owns everything it needs — `api/`, `components/`, `hooks/`, `services/`, `storage/`, `types.ts`, `index.ts` — and registers itself with the dashboard through `shared/lib/module-registry.ts`. Adding a new module never requires touching the dashboard shell. Full details in [docs/architecture.md](docs/architecture.md) and [docs/modules.md](docs/modules.md).
 
 ---
 
@@ -152,15 +130,83 @@ The UI never calls `fetch` or `chrome.storage` directly. Every module renders fr
 
 ---
 
+## System Design
+
+New Day is a **client-side, offline-first system** — there is no owned backend. That reframes the usual scaling questions: there is no throughput to shard, no replicas to manage. The real constraints are **per-tab startup latency, bundle size, storage quota, and cache freshness.** A New Tab is opened dozens of times a day, so the effective latency budget for first paint is _zero_ — it must come from cache, every time.
+
+### What we're optimizing for
+
+| Dimension          | Reality                                  | Design consequence                                                             |
+| ------------------ | ---------------------------------------- | ------------------------------------------------------------------------------ |
+| New-tab opens      | ~30–100 per user per day                 | Each open is a cold React mount → first paint served from cache, never network |
+| External API calls | 1 verse / 24h, weather / 30min           | `dateKey` cache means OurManna is hit at most once per active day              |
+| Local data volume  | Todos/prayers/gratitude/focus — KB-scale | Fits IndexedDB comfortably; no pagination or eviction strategy needed          |
+| Critical bundle    | newtab entry + shell only                | Every module and the Settings page are `React.lazy`, pulled on demand          |
+
+### High-level runtime
+
+```
+Chrome (Manifest V3)
+  │
+  └─ entrypoints/newtab ─► <App>
+                             │  view-store (Zustand, ambient) swaps views —
+                             │  no page navigation, cross-faded via View Transitions API
+              ┌──────────────┴──────────────┐
+              ▼                              ▼
+        <Dashboard>                   <SettingsPage>  (lazy, prefetched after first paint)
+              │
+              ▼
+      <ModuleRenderer> ── reads module-registry + per-user moduleStates overrides
+              │
+     ┌────────┼────────┬────────┬─────────┬────────┐
+     ▼        ▼        ▼        ▼         ▼        ▼
+   clock    bible   weather   focus    prayer    todo …   (each lazy + Suspense-wrapped)
+              │
+     UI → hook → service → storage → api   (per-module vertical slice)
+```
+
+### Deep dives
+
+**Module registry — the composition core.** Each module ships a `ModuleDefinition`: `id`, `title`, `icon`, a **lazy** `component`, and metadata (`refreshInterval`, `gridArea`, `requiresNetwork`, optional `settingsComponent`). `ModuleRenderer` loops the registry, applies the user's enable/disable overrides from the settings store, and places each card by `gridArea`. Adding a module is a self-contained slice plus one `registerModule` call — the dashboard shell never changes. The **no-cross-module-imports** rule is the invariant that keeps the platform modular.
+
+**Storage — two backends, one discipline.** Small hot config (settings, the daily verse cache) lives in `chrome.storage.local` behind the `StorageService` interface. List and entry data (todos, prayers, gratitude, focus, favorites) lives in IndexedDB via Dexie, with a **versioned migration chain** (`app-db.ts`, v1→v4, including an upgrade that backfills `position` onto existing todos). A Zustand-compatible async adapter persists the settings store to Chrome Storage and falls back to `localStorage` when Chrome APIs are absent. Every storage call **fails soft**, so tests and non-extension contexts degrade instead of throwing.
+
+**Offline-first flow (verse as the reference pattern).** `getDailyVerse()` reads the cache first; if today's `dateKey` matches, it returns immediately with zero network. Otherwise it fetches, **validates the response with Zod at the boundary**, writes the cache, and returns. A malformed upstream payload becomes a caught error, not a downstream crash. First paint is always cache-served; the network is a background refresh.
+
+**View routing without navigation.** An ambient, unpersisted `view-store` swaps Dashboard ↔ Settings inside the same document. Swaps run through `withViewTransition`, which uses the View Transitions API for a cross-fade and falls back to an instant update under `prefers-reduced-motion` or where the API is unavailable. Settings is code-split and prefetched after first paint so its transition captures real content on first open.
+
+**Config & feature flags.** `config/app-config.yaml` is split by `dev`/`production` environment and carries feature toggles. `FeatureToggleService` **fails dark** — an undeclared flag resolves to `false`.
+
+### Reliability
+
+- **Failure isolation.** Each module is `Suspense`-wrapped with a skeleton fallback; `requiresNetwork` marks progressive-enhancement candidates. One module failing is contained to its own card.
+- **No single point of failure that matters.** No backend means no backend outage. The one external dependency (OurManna) is masked by the 24-hour cache — a failed fetch simply serves the last good verse.
+- **Schema safety.** Dexie's versioned migrations, with upgrade backfills, are the recovery story for local data.
+- **Testing.** Vitest covers services and hooks; the storage layer has integration tests against `fake-indexeddb`. husky + lint-staged gate every commit.
+
+### Tradeoffs
+
+| Decision                          | Buys                                   | Costs                                                |
+| --------------------------------- | -------------------------------------- | ---------------------------------------------------- |
+| No backend, all on-device         | Privacy, zero infra, instant reads     | No cross-device sync; no server-side analytics       |
+| Two storage backends (KV + Dexie) | Right tool per data shape              | Two mental models; migrations only on the Dexie side |
+| Static import registry            | Simple, type-safe, tree-shakeable      | A registry edit per module (no runtime plugins)      |
+| Lazy modules + Settings prefetch  | Tiny critical bundle, fast first paint | Suspense / prefetch orchestration                    |
+| Feature flags from bundled YAML   | Simple, no flag service                | Flags are fixed at build time — no runtime rollout   |
+
+**Next up:** the MV3 background service worker is currently a stub. Wiring it to the already-declared `refreshInterval` metadata (scheduled cache warming, notifications) is the natural next step, followed by optional cross-device sync via `chrome.storage.sync` behind the existing `StorageService`.
+
+---
+
 ## Documentation
 
-| File                                           | Contents                                                             |
-| ---------------------------------------------- | -------------------------------------------------------------------- |
-| [docs/architecture.md](docs/architecture.md)   | System architecture, folder structure, data flow, state management   |
-| [docs/tech-stack.md](docs/tech-stack.md)       | Every dependency with rationale, plus what was deliberately left out |
-| [docs/modules.md](docs/modules.md)             | Module registry spec, per-module behavior, caching rules             |
-| [docs/design-system.md](docs/design-system.md) | Visual spec — layout grid, colors, typography, card anatomy, motion  |
-| [docs/roadmap.md](docs/roadmap.md)             | Phased development plan with deliverables per phase                  |
+| File                                           | Contents                                                                           |
+| ---------------------------------------------- | ---------------------------------------------------------------------------------- |
+| [docs/architecture.md](docs/architecture.md)   | Requirements, budgets, system architecture, folder structure, data flow, tradeoffs |
+| [docs/tech-stack.md](docs/tech-stack.md)       | Every dependency with rationale, plus what was deliberately left out               |
+| [docs/modules.md](docs/modules.md)             | Module registry spec, per-module behavior, caching rules                           |
+| [docs/design-system.md](docs/design-system.md) | Visual spec — layout grid, colors, typography, card anatomy, motion                |
+| [docs/roadmap.md](docs/roadmap.md)             | Phased development plan with deliverables per phase                                |
 
 ---
 
