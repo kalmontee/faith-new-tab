@@ -61,14 +61,14 @@ pnpm install
 
 ### Environment variables
 
-Bible verses work out of the box for **KJV** (via the free [bible-api.com](https://bible-api.com), no key required). To enable **ESV** and **NKJV**, get a free key from [scripture.api.bible](https://scripture.api.bible/signup) and copy it into a `.env` file:
+Bible verses are fetched from [OurManna](https://ourmanna.com). Copy the example env file and set the API URL:
 
 ```bash
 cp .env.example .env
 ```
 
 ```dotenv
-VITE_BIBLE_API_KEY=your_key_here
+VITE_OURMANNA_API_URL=https://beta.ourmanna.com/api/v1/get
 ```
 
 ### Run in development
