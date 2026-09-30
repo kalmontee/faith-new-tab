@@ -1,5 +1,3 @@
-export type VerseType = 'daily' | 'random';
-
 export interface DailyVerse {
   reference: string;
   text: string;
