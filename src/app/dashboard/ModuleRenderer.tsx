@@ -1,7 +1,7 @@
 import { Suspense, Fragment } from 'react';
 import { motion } from 'framer-motion';
 
-import { getAllModules } from '@/shared/lib/module-registry';
+import { resolveModules } from '@/shared/lib/module-registry';
 import { useSettingsStore } from '@/shared/store/settings-store';
 
 function ModuleSkeleton() {
@@ -23,10 +23,7 @@ const cardVariants = {
 
 export function ModuleRenderer() {
   const moduleStates = useSettingsStore((s) => s.moduleStates);
-  const modules = getAllModules().filter((mod) => {
-    const override = moduleStates[mod.id];
-    return override !== undefined ? override : mod.enabled;
-  });
+  const modules = resolveModules(moduleStates).filter((mod) => mod.enabled);
 
   return (
     <Fragment>

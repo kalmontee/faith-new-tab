@@ -128,7 +128,7 @@ src/
 ├── shared/
 │   ├── ui/                          # shadcn/ui primitives in use today: card.tsx, toggle.tsx
 │   ├── lib/
-│   │   ├── module-registry.ts       # Central registry: registerModule/getEnabledModules
+│   │   ├── module-registry.ts       # Central registry: registerModule/resolveModules
 │   │   ├── daily-rotation.ts        # Deterministic day-of-year picker (quotes, footer verses)
 │   │   ├── view-transition.ts       # withViewTransition() wrapper for view-store swaps
 │   │   └── utils.ts
