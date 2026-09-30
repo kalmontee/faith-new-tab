@@ -1,5 +1,5 @@
 import { Suspense, Fragment } from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 
 import { getAllModules } from '@/shared/lib/module-registry';
 import { useSettingsStore } from '@/shared/store/settings-store';
@@ -31,7 +31,7 @@ export function ModuleRenderer() {
   return (
     <Fragment>
       {modules.map((mod, index) => (
-        <motion.div
+        <m.div
           key={mod.id}
           style={{ gridArea: mod.gridArea }}
           custom={index}
@@ -42,7 +42,7 @@ export function ModuleRenderer() {
           <Suspense fallback={<ModuleSkeleton />}>
             <mod.component />
           </Suspense>
-        </motion.div>
+        </m.div>
       ))}
     </Fragment>
   );
