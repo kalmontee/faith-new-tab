@@ -3,26 +3,14 @@ import { storage } from '@/shared/storage';
 
 const CACHE_KEY = 'bible:cached-verse';
 
-export async function getCachedVerse(): Promise<CachedVerseEntry | null> {
-  try {
-    return await storage.get<CachedVerseEntry>(CACHE_KEY);
-  } catch {
-    return null;
-  }
+export function getCachedVerse(): Promise<CachedVerseEntry | null> {
+  return storage.get<CachedVerseEntry>(CACHE_KEY);
 }
 
-export async function setCachedVerse(entry: CachedVerseEntry): Promise<void> {
-  try {
-    await storage.set(CACHE_KEY, entry);
-  } catch {
-    // storage unavailable in non-extension context — silently skip
-  }
+export function setCachedVerse(entry: CachedVerseEntry): Promise<void> {
+  return storage.set(CACHE_KEY, entry);
 }
 
-export async function clearCachedVerse(): Promise<void> {
-  try {
-    await storage.remove(CACHE_KEY);
-  } catch {
-    // ignore
-  }
+export function clearCachedVerse(): Promise<void> {
+  return storage.remove(CACHE_KEY);
 }

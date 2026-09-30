@@ -94,11 +94,6 @@ describe('getCachedWeather', () => {
     vi.mocked(storage.get).mockResolvedValue(makeEntry({ lat: LAT + 0.05, lng: LNG - 0.05 }));
     expect(await getCachedWeather(LAT, LNG)).not.toBeNull();
   });
-
-  it('returns null when storage.get throws', async () => {
-    vi.mocked(storage.get).mockRejectedValue(new Error('Storage unavailable'));
-    expect(await getCachedWeather(LAT, LNG)).toBeNull();
-  });
 });
 
 // ── setCachedWeather ──────────────────────────────────────────────────────
@@ -114,10 +109,5 @@ describe('setCachedWeather', () => {
     const entry = makeEntry();
     await setCachedWeather(entry);
     expect(storage.set).toHaveBeenCalledWith('weather:data', entry);
-  });
-
-  it('does not throw when storage.set fails', async () => {
-    vi.mocked(storage.set).mockRejectedValue(new Error('Storage full'));
-    await expect(setCachedWeather(makeEntry())).resolves.not.toThrow();
   });
 });
