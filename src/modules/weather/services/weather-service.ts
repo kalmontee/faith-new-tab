@@ -1,15 +1,31 @@
+import { createCachedResource } from '@/shared/lib/cached-resource';
 import { fetchWeather } from '../api/weather-api';
-import { getCachedWeather, setCachedWeather } from '../storage/weather-storage';
-import type { TemperatureUnit, WeatherData } from '../types';
+import type { CachedWeatherEntry, TemperatureUnit, WeatherData } from '../types';
 
-export async function getWeatherData(lat: number, lng: number, unit: TemperatureUnit): Promise<WeatherData> {
-  const cached = await getCachedWeather(lat, lng);
+interface WeatherQuery {
+  lat: number;
+  lng: number;
+  unit: TemperatureUnit;
+}
 
-  // Serve cache if it exists AND the unit matches (unit change forces a fresh fetch)
-  if (cached && cached.data.unit === unit) return cached.data;
+const CACHE_TTL_MS = 30 * 60 * 1000;
+// ~10 km tolerance: close enough to reuse the same cached reading
+const COORDS_TOLERANCE_DEG = 0.1;
 
-  const data = await fetchWeather(lat, lng, unit);
-  await setCachedWeather({ data, cachedAt: Date.now(), lat, lng });
+const weather = createCachedResource<WeatherQuery, WeatherData, CachedWeatherEntry>({
+  fetcher: ({ lat, lng, unit }) => fetchWeather(lat, lng, unit),
+  policy: {
+    storageKey: 'weather:data',
+    isFresh: (entry, { lat, lng, unit }, now) =>
+      now - entry.cachedAt < CACHE_TTL_MS &&
+      Math.abs(entry.lat - lat) < COORDS_TOLERANCE_DEG &&
+      Math.abs(entry.lng - lng) < COORDS_TOLERANCE_DEG &&
+      entry.data.unit === unit,
+    toEntry: (data, { lat, lng }, now) => ({ data, cachedAt: now, lat, lng }),
+    toData: (entry) => entry.data,
+  },
+});
 
-  return data;
+export function getWeatherData(lat: number, lng: number, unit: TemperatureUnit): Promise<WeatherData> {
+  return weather.get({ lat, lng, unit });
 }

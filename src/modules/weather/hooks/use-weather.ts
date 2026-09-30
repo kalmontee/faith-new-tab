@@ -60,7 +60,6 @@ export function useWeather(): UseWeatherResult {
     queryKey: ['weather', coords?.lat, coords?.lng, temperatureUnit],
     queryFn: () => getWeatherData(coords!.lat, coords!.lng, temperatureUnit),
     enabled: !!coords,
-    staleTime: 30 * 60 * 1000,
     retry: 2,
   });
 
