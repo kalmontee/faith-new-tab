@@ -9,7 +9,5 @@ export const focusModule: ModuleDefinition = {
   icon: Target,
   enabled: true,
   component: lazy(() => import('./components/FocusCard')),
-  refreshInterval: 'never',
   gridArea: 'focus',
-  requiresNetwork: false,
 };

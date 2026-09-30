@@ -9,7 +9,5 @@ export const todoModule: ModuleDefinition = {
   icon: ListChecks,
   enabled: true,
   component: lazy(() => import('./components/TodoCard')),
-  refreshInterval: 'never',
   gridArea: 'todo',
-  requiresNetwork: false,
 };

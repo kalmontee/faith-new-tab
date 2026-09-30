@@ -9,7 +9,5 @@ export const clockModule: ModuleDefinition = {
   icon: Clock,
   enabled: true,
   component: lazy(() => import('./components/ClockGreeting')),
-  refreshInterval: 'never',
   gridArea: 'clock',
-  requiresNetwork: false,
 };

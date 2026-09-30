@@ -196,9 +196,7 @@ interface ModuleDefinition {
   icon: LucideIcon; // Icon component
   enabled: boolean; // Default state
   component: React.LazyExoticComponent<React.FC>;
-  refreshInterval?: 'daily' | 'hourly' | '30min' | 'never';
   gridArea?: string; // CSS Grid placement hint
-  requiresNetwork?: boolean; // For progressive enhancement
 }
 ```
 
@@ -338,7 +336,7 @@ Rule of thumb: if only one module cares about it, keep it local. If the dashboar
 
 ## Background Worker
 
-> **Status:** currently a stub (`entrypoints/background.ts` only logs on startup). The `refreshInterval` metadata already declared on each module is the intended trigger source; wiring it up is the next step. The responsibilities below are the target design.
+> **Status:** currently a stub (`entrypoints/background.ts` only logs on startup). Scheduled refresh should call `refresh()` on the shared `cached-resource` module of each network-backed module. The responsibilities below are the target design.
 
 The Manifest V3 service worker is intended to handle:
 
@@ -384,7 +382,7 @@ Each module is wrapped in its own error boundary. If the weather API is down, th
 
 ## Future Work
 
-1. **Activate the service worker** — scheduled refresh honoring each module's `refreshInterval`, plus notifications. (See the Background Worker section — currently a stub.)
+1. **Activate the service worker** — scheduled cache refresh through `cached-resource`, plus notifications. (See the Background Worker section — currently a stub.)
 2. **Cross-device sync** — optional, via `chrome.storage.sync` behind the existing `StorageService`.
 3. **Drag-to-reorder module layout**, persisted to settings.
 4. **Observability** — the codebase has almost no structured logging today, so field failures are currently invisible. Lightweight instrumentation is the highest-leverage reliability gap.

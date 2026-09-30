@@ -14,13 +14,9 @@ interface ModuleDefinition {
   icon: LucideIcon;
   enabled: boolean; // default enabled state
   component: React.LazyExoticComponent<React.FC>;
-  refreshInterval?: RefreshInterval;
   gridArea?: string; // CSS Grid area name
-  requiresNetwork?: boolean;
   settingsComponent?: React.LazyExoticComponent<React.FC>; // per-module settings panel
 }
-
-type RefreshInterval = 'daily' | 'hourly' | '30min' | 'never';
 ```
 
 ---
@@ -47,7 +43,7 @@ type RefreshInterval = 'daily' | 'hourly' | '30min' | 'never';
 | Refresh   | Daily                                                                                                                                                                          |
 | Network   | Yes (API fetch), cached offline                                                                                                                                                |
 | Storage   | Cached verse (24h TTL)                                                                                                                                                         |
-| Behavior  | Shows OurManna's Verse of the Day with large quote typography, the reference below (e.g. "Philippians 4:13"), and a "New Verse" refresh button (random verse). Verses are NIV. |
+| Behavior  | Shows OurManna's Verse of the Day with large quote typography, the reference below (e.g. "Philippians 4:13"). Verses are NIV. |
 | Settings  | None (OurManna serves NIV only)                                                                                                                                                |
 
 ### Weather

@@ -9,7 +9,5 @@ export const bibleModule: ModuleDefinition = {
   icon: BookOpen,
   enabled: true,
   component: lazy(() => import('./components/VerseCard')),
-  refreshInterval: 'daily',
   gridArea: 'verse',
-  requiresNetwork: true,
 };

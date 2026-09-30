@@ -9,7 +9,5 @@ export const weatherModule: ModuleDefinition = {
   icon: Cloud,
   enabled: true,
   component: lazy(() => import('./components/WeatherCard')),
-  refreshInterval: '30min',
   gridArea: 'weather',
-  requiresNetwork: true,
 };
