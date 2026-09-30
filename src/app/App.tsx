@@ -1,4 +1,4 @@
-import { MotionConfig } from 'framer-motion';
+import { LazyMotion, MotionConfig } from 'framer-motion';
 import { Suspense, lazy, useEffect } from 'react';
 
 import Dashboard from './dashboard/Dashboard';
@@ -8,6 +8,7 @@ import { useViewStore } from '@/shared/store/view-store';
 // Code-split so Settings stays out of the New Tab critical bundle.
 const importSettingsPage = () => import('./settings/SettingsPage');
 const SettingsPage = lazy(importSettingsPage);
+const loadMotionFeatures = () => import('./motion-features').then((mod) => mod.default);
 
 export function App() {
   const view = useViewStore((s) => s.view);
@@ -20,16 +21,18 @@ export function App() {
   }, []);
 
   return (
-    <MotionConfig reducedMotion="user">
-      <DashboardBackground>
-        {view === 'settings' ? (
-          <Suspense fallback={null}>
-            <SettingsPage onBack={closeSettings} />
-          </Suspense>
-        ) : (
-          <Dashboard />
-        )}
-      </DashboardBackground>
-    </MotionConfig>
+    <LazyMotion features={loadMotionFeatures}>
+      <MotionConfig reducedMotion="user">
+        <DashboardBackground>
+          {view === 'settings' ? (
+            <Suspense fallback={null}>
+              <SettingsPage onBack={closeSettings} />
+            </Suspense>
+          ) : (
+            <Dashboard />
+          )}
+        </DashboardBackground>
+      </MotionConfig>
+    </LazyMotion>
   );
 }
