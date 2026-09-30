@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { BookOpen, Calendar, Music, Sprout } from 'lucide-react';
 
 import { pickDaily } from '@/shared/lib/daily-rotation';
@@ -23,7 +23,7 @@ export function DashboardFooter() {
   const verse = pickDaily(FOOTER_VERSES);
 
   return (
-    <motion.footer
+    <m.footer
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ delay: 0.9, duration: 0.4 }}
@@ -50,6 +50,6 @@ export function DashboardFooter() {
           </FooterIconButton>
         </div>
       )}
-    </motion.footer>
+    </m.footer>
   );
 }
