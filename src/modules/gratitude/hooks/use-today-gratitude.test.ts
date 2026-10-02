@@ -36,6 +36,7 @@ describe('useTodayGratitude', () => {
       await result.current.save('Grateful for rest');
     });
 
+    expect(result.current.entry?.entry).toBe('Grateful for rest');
     await waitFor(() => expect(result.current.entry?.entry).toBe('Grateful for rest'));
   });
 });

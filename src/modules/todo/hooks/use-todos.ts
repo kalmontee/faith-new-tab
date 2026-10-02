@@ -1,5 +1,3 @@
-import { useState } from 'react';
-
 import {
   getAllTodos,
   addTodo as addTodoToStore,
@@ -8,8 +6,11 @@ import {
   removeTodo as removeTodoFromStore,
   reorderTodos as reorderTodosInStore,
 } from '../services/todo-service';
+import { useOptimisticOverride } from '@/shared/hooks/use-optimistic-override';
 import { useLiveCollection } from '@/shared/hooks/use-live-collection';
 import type { TodoItem } from '@/shared/types/table';
+
+const EMPTY: TodoItem[] = [];
 
 export interface UseTodosResult {
   todos: TodoItem[];
@@ -21,25 +22,16 @@ export interface UseTodosResult {
   reorderTodos: (reordered: TodoItem[]) => Promise<void>;
 }
 
-interface OptimisticOrder {
-  base: TodoItem[] | undefined;
-  items: TodoItem[];
-}
-
 export function useTodos(): UseTodosResult {
   const { data, isLoading } = useLiveCollection(getAllTodos);
-  const [optimistic, setOptimistic] = useState<OptimisticOrder | null>(null);
-
-  // The drag order shows immediately and lasts only until the live query emits
-  // again: a new `data` reference means storage has caught up (or rolled back).
-  const todos = optimistic && optimistic.base === data ? optimistic.items : (data ?? []);
+  const [todos, setOrder, clearOrder] = useOptimisticOverride(data ?? EMPTY);
 
   const reorderTodos = async (reordered: TodoItem[]) => {
-    setOptimistic({ base: data, items: reordered });
+    setOrder(reordered);
     try {
       await reorderTodosInStore(reordered.map((todo) => todo.id));
     } catch (error) {
-      setOptimistic(null);
+      clearOrder();
       throw error;
     }
   };

@@ -36,6 +36,7 @@ describe('useTodayFocus', () => {
       await result.current.save('Trust the process', 'One step at a time');
     });
 
+    expect(result.current.entry).toMatchObject({ focus: 'Trust the process', tagline: 'One step at a time' });
     await waitFor(() => expect(result.current.entry).toMatchObject({ focus: 'Trust the process', tagline: 'One step at a time' }));
   });
 
