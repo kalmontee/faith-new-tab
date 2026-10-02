@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
 import { getTodayFocus, saveFocus } from '../services/focus-service';
+import { useLiveCollection } from '@/shared/hooks/use-live-collection';
 import type { FocusEntry } from '@/shared/types/table';
 
 export interface UseTodayFocusResult {
@@ -9,20 +9,13 @@ export interface UseTodayFocusResult {
 }
 
 export function useTodayFocus(): UseTodayFocusResult {
-  const [entry, setEntry] = useState<FocusEntry | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data, isLoading } = useLiveCollection(getTodayFocus);
 
-  useEffect(() => {
-    getTodayFocus()
-      .then((e) => setEntry(e ?? null))
-      .catch(() => setEntry(null))
-      .finally(() => setIsLoading(false));
-  }, []);
-
-  const save = useCallback(async (focus: string, tagline: string) => {
-    const saved = await saveFocus(focus, tagline);
-    setEntry(saved);
-  }, []);
-
-  return { entry, isLoading, save };
+  return {
+    entry: data ?? null,
+    isLoading,
+    save: async (focus, tagline) => {
+      await saveFocus(focus, tagline);
+    },
+  };
 }

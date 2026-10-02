@@ -1,10 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
 import {
   getAllPrayers,
   addPrayer as addPrayerToStore,
   toggleAnswered as toggleAnsweredInStore,
   removePrayer as removePrayerFromStore,
 } from '../services/prayer-service';
+import { useLiveCollection } from '@/shared/hooks/use-live-collection';
 import type { PrayerRequest } from '@/shared/types/table';
 
 export interface UsePrayersResult {
@@ -16,30 +16,15 @@ export interface UsePrayersResult {
 }
 
 export function usePrayers(): UsePrayersResult {
-  const [prayers, setPrayers] = useState<PrayerRequest[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data, isLoading } = useLiveCollection(getAllPrayers);
 
-  useEffect(() => {
-    getAllPrayers()
-      .then(setPrayers)
-      .catch(() => setPrayers([]))
-      .finally(() => setIsLoading(false));
-  }, []);
-
-  const addPrayer = useCallback(async (text: string) => {
-    await addPrayerToStore(text);
-    setPrayers(await getAllPrayers());
-  }, []);
-
-  const toggleAnswered = useCallback(async (id: number) => {
-    await toggleAnsweredInStore(id);
-    setPrayers(await getAllPrayers());
-  }, []);
-
-  const removePrayer = useCallback(async (id: number) => {
-    await removePrayerFromStore(id);
-    setPrayers(await getAllPrayers());
-  }, []);
-
-  return { prayers, isLoading, addPrayer, toggleAnswered, removePrayer };
+  return {
+    prayers: data ?? [],
+    isLoading,
+    addPrayer: async (text) => {
+      await addPrayerToStore(text);
+    },
+    toggleAnswered: toggleAnsweredInStore,
+    removePrayer: removePrayerFromStore,
+  };
 }

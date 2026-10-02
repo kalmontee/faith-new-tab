@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
 import { getTodayGratitude, saveGratitude } from '../services/gratitude-service';
+import { useLiveCollection } from '@/shared/hooks/use-live-collection';
 import type { GratitudeEntry } from '@/shared/types/table';
 
 export interface UseTodayGratitudeResult {
@@ -9,20 +9,13 @@ export interface UseTodayGratitudeResult {
 }
 
 export function useTodayGratitude(): UseTodayGratitudeResult {
-  const [entry, setEntry] = useState<GratitudeEntry | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data, isLoading } = useLiveCollection(getTodayGratitude);
 
-  useEffect(() => {
-    getTodayGratitude()
-      .then((e) => setEntry(e ?? null))
-      .catch(() => setEntry(null))
-      .finally(() => setIsLoading(false));
-  }, []);
-
-  const save = useCallback(async (text: string) => {
-    const saved = await saveGratitude(text);
-    setEntry(saved);
-  }, []);
-
-  return { entry, isLoading, save };
+  return {
+    entry: data ?? null,
+    isLoading,
+    save: async (text) => {
+      await saveGratitude(text);
+    },
+  };
 }
