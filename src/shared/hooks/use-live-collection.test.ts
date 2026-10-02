@@ -42,6 +42,17 @@ describe('useLiveCollection', () => {
     expect(result.current.data).toBeUndefined();
   });
 
+  it('should resubscribe after a failed query and recover once it succeeds', async () => {
+    let calls = 0;
+    const flaky = () => (++calls === 1 ? Promise.reject(new Error('blocked')) : db.prayers.toArray());
+    const { result } = renderHook(() => useLiveCollection(flaky));
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(result.current.data).toBeUndefined();
+
+    await waitFor(() => expect(result.current.data).toEqual([]), { timeout: 3_000 });
+  });
+
   it('should stop observing after unmount', async () => {
     let runs = 0;
     const counting = () => {
