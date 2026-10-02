@@ -23,8 +23,8 @@ const weather = createCachedResource<WeatherQuery, WeatherData, CachedWeatherEnt
       Math.abs(entry.lat - lat) < COORDS_TOLERANCE_DEG &&
       Math.abs(entry.lng - lng) < COORDS_TOLERANCE_DEG &&
       entry.data.unit === unit &&
-      (cityName === undefined || entry.data.city === cityName),
-    toEntry: (data, { lat, lng }, now) => ({ data, cachedAt: now, lat, lng }),
+      entry.cityName === cityName,
+    toEntry: (data, { lat, lng, cityName }, now) => ({ data, cachedAt: now, lat, lng, cityName }),
     toData: (entry) => entry.data,
   },
 });

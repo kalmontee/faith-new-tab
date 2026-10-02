@@ -2,17 +2,18 @@ import { useId, useState } from 'react';
 import { MapPin, Search } from 'lucide-react';
 
 import { cn } from '@/shared/lib/utils';
-import { useLocationSearch } from '@/modules/weather';
+import { useLocationSearch, type LocationSearch } from '@/modules/weather';
 import { useSettingsStore } from '@/shared/store/settings-store';
 import type { ManualLocation } from '@/shared/types/location';
 
 const NO_ACTIVE_OPTION = -1;
 
-const STATUS_MESSAGES = {
-  searching: 'Searching…',
-  error: "Couldn't search right now. Check your connection.",
-  empty: 'No cities found. Try another spelling.',
-} as const;
+function getStatusMessage({ state, results }: LocationSearch): string {
+  if (state === 'searching') return 'Searching…';
+  if (state === 'error') return "Couldn't search right now. Check your connection.";
+  if (state === 'ready' && results.length === 0) return 'No cities found. Try another spelling.';
+  return '';
+}
 
 export function LocationSetting() {
   const manualLocation = useSettingsStore((s) => s.manualLocation);
@@ -23,14 +24,10 @@ export function LocationSetting() {
   const listboxId = `${baseId}-results`;
   const optionId = (index: number) => `${baseId}-option-${index}`;
 
-  const { state, results } = useLocationSearch(query);
+  const search = useLocationSearch(query);
+  const { state, results } = search;
   const isListOpen = state === 'ready' && results.length > 0;
-  const statusMessage =
-    state === 'ready' && results.length === 0
-      ? STATUS_MESSAGES.empty
-      : state === 'searching' || state === 'error'
-        ? STATUS_MESSAGES[state]
-        : '';
+  const statusMessage = getStatusMessage(search);
 
   function resetSearch() {
     setQuery('');

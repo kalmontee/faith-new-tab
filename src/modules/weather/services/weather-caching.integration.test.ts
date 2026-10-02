@@ -62,6 +62,16 @@ describe('weather caching (integration)', () => {
     expect(fetchWeather).toHaveBeenCalledTimes(2);
   });
 
+  it('should refetch when switching from a picked city back to the browser location', async () => {
+    vi.mocked(fetchWeather).mockImplementation(async (_lat, _lng, unit, cityName) => ({ ...weather(unit), city: cityName ?? 'NYC' }));
+
+    await getWeatherData(LAT, LNG, 'fahrenheit', 'Newark');
+    const auto = await getWeatherData(LAT, LNG, 'fahrenheit');
+
+    expect(auto.city).toBe('NYC');
+    expect(fetchWeather).toHaveBeenCalledTimes(2);
+  });
+
   it('should reuse the cache for the same picked city', async () => {
     vi.mocked(fetchWeather).mockImplementation(async (_lat, _lng, unit, cityName) => ({ ...weather(unit), city: cityName ?? 'NYC' }));
 
