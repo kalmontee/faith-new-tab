@@ -79,9 +79,13 @@ Both are transitive **build-time** dependencies (Vite/PostCSS/YAML plugin), not 
 ## What's already solid
 
 - **No XSS-prone rendering paths.** Every place verse/weather/quote text reaches the DOM, it's a JSX text child (e.g. [VerseCard.tsx:20](../src/modules/bible/components/VerseCard.tsx#L20)), which React escapes by default. Zero uses of `dangerouslySetInnerHTML`, `innerHTML`, or `eval` in `src/`.
-- **External API responses are schema-validated**, not trusted blindly — `OurMannaSchema`, `OpenMeteoSchema`, and `NominatimSchema` (Zod) parse every response in [verse-api.ts](../src/modules/bible/api/verse-api.ts) and [weather-api.ts](../src/modules/weather/api/weather-api.ts) before the data is used. This blocks malformed/unexpected payloads from a compromised or misbehaving API from propagating into app state.
+- **External API responses are schema-validated**, not trusted blindly — `OurMannaSchema`, `OpenMeteoSchema`, `NominatimSchema`, and `GeocodingSchema` (Zod) parse every response in [verse-api.ts](../src/modules/bible/api/verse-api.ts) and [weather-api.ts](../src/modules/weather/api/weather-api.ts) before the data is used. This blocks malformed/unexpected payloads from a compromised or misbehaving API from propagating into app state.
 - **MV3's default CSP is untouched.** Nothing in the manifest weakens `script-src 'self'; object-src 'self'`, and MV3 forbids remotely-hosted code outright — there's no code path where a compromised CDN could inject a script into the New Tab page. This makes most of the skill's CSP/SRI checklist structurally satisfied by the platform rather than needing manual config.
 - **No `externally_connectable`, no `onMessageExternal`, no `postMessage` usage** — the extension exposes no message-passing surface to other extensions or web pages.
+
+## Outbound request: city search
+
+Settings → Weather → Location sends the text the user types to `geocoding-api.open-meteo.com` (`VITE_GEOCODING_API_URL`). Only the trimmed query is sent (debounced, at least 2 characters), with no coordinates or identifiers, and nothing is sent unless the user types in that box. The chosen city's coordinates are stored locally and sent to the existing weather API, as browser-derived coordinates already are.
 
 ## Accepted Risk: Client-Side Secrets
 
