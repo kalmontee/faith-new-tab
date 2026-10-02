@@ -20,19 +20,20 @@ export function createDailyEntry<T extends DailyRow>(table: EntityTable<T, 'id'>
   return {
     getToday: () => findByDate(getTodayKey()),
 
-    async saveToday(fields) {
-      const date = getTodayKey();
-      const existing = await findByDate(date);
-      const updatedAt = Date.now();
+    saveToday: (fields) =>
+      table.db.transaction('rw', table, async () => {
+        const date = getTodayKey();
+        const existing = await findByDate(date);
+        const updatedAt = Date.now();
 
-      if (existing) {
-        await table.update(existing.id as never, { ...fields, updatedAt } as never);
-        return { ...existing, ...fields, updatedAt };
-      }
+        if (existing) {
+          await table.update(existing.id as never, { ...fields, updatedAt } as never);
+          return { ...existing, ...fields, updatedAt };
+        }
 
-      const row = { ...fields, date, updatedAt } as unknown as Parameters<typeof table.add>[0];
-      const id = (await table.add(row)) as number;
-      return { ...row, id } as unknown as T;
-    },
+        const row = { ...fields, date, updatedAt } as unknown as Parameters<typeof table.add>[0];
+        const id = (await table.add(row)) as number;
+        return { ...row, id } as unknown as T;
+      }),
   };
 }

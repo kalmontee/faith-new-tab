@@ -37,6 +37,12 @@ describe('createDailyEntry', () => {
     expect((await focusEntries.getToday())?.focus).toBe('Revised');
   });
 
+  it('should keep one row when two saves race on an empty day', async () => {
+    await Promise.all([gratitudeEntries.saveToday({ entry: 'A' }), gratitudeEntries.saveToday({ entry: 'B' })]);
+
+    expect(await db.gratitude.count()).toBe(1);
+  });
+
   it('should start a new row on the next day', async () => {
     await gratitudeEntries.saveToday({ entry: 'Yesterday' });
     vi.setSystemTime(new Date(2025, 5, 16, 9, 0, 0));
