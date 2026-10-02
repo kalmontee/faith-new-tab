@@ -109,18 +109,16 @@ src/
 │   │   ├── hooks/
 │   │   │   └── use-daily-verse.ts
 │   │   ├── services/
-│   │   │   └── verse-service.ts     # Cache / fetch / store orchestration
-│   │   ├── storage/
-│   │   │   └── verse-storage.ts     # chrome.storage.local, keyed by dateKey
+│   │   │   └── verse-service.ts     # Cache policy (per dateKey) + fetcher, over shared/lib/cached-resource
 │   │   ├── types.ts
 │   │   ├── module.ts                # ModuleDefinition + registerModule-eligible export
 │   │   └── index.ts                 # Barrel export
 │   │
-│   ├── weather/                     # Same api/components/hooks/services/storage shape (+utils/)
-│   ├── todo/                        # No api/storage — services call shared/storage/app-db.ts (Dexie) directly
-│   ├── gratitude/                   # Same Dexie-backed shape as todo/
+│   ├── weather/                     # Same api/components/hooks/services shape (+utils/); policy is TTL + location + unit
+│   ├── todo/                        # No api/storage — services call shared/storage/app-db.ts (Dexie); hook reads via useLiveCollection
+│   ├── gratitude/                   # Dexie-backed; service binds shared/lib/daily-entry to the gratitude table
 │   ├── prayer/                      # Same Dexie-backed shape as todo/
-│   ├── focus/                       # Same Dexie-backed shape as todo/, no index.ts barrel
+│   ├── focus/                       # Dexie-backed; service binds shared/lib/daily-entry to the focus table
 │   ├── clock/                       # components/ + hooks/ only, no network or persistence
 │   ├── quotes/                      # Bundled data (quotes-data.ts), daily-rotation pick, no api/
 │   └── quick-actions/               # Favorites service (Dexie) + opens Settings via view-store
@@ -128,15 +126,22 @@ src/
 ├── shared/
 │   ├── ui/                          # shadcn/ui primitives in use today: card.tsx, toggle.tsx
 │   ├── lib/
-│   │   ├── module-registry.ts       # Central registry: registerModule/resolveModules
+│   │   ├── module-registry.ts       # Central registry: resolveModules(moduleStates) applies user overrides, in display order
+│   │   ├── cached-resource.ts       # Cache-first get/refresh: policy (freshness, entry shape) + fetcher; callable from the background worker
+│   │   ├── daily-entry.ts           # One row per day on a Dexie table: getToday / saveToday (transactional upsert)
 │   │   ├── daily-rotation.ts        # Deterministic day-of-year picker (quotes, footer verses)
 │   │   ├── view-transition.ts       # withViewTransition() wrapper for view-store swaps
 │   │   └── utils.ts
+│   ├── hooks/
+│   │   ├── use-live-collection.ts   # Dexie liveQuery → { data, isLoading }; updates on writes, including from other tabs
+│   │   └── use-optimistic-override.ts # Show a pending value until the live query emits a new reference
 │   ├── storage/
 │   │   ├── storage-service.ts       # StorageService interface — get/set/remove/clear
-│   │   ├── chrome-adapter.ts        # StorageService impl over chrome.storage.local (settings, KV cache)
+│   │   ├── chrome-adapter.ts        # StorageService adapter over chrome.storage.local
+│   │   ├── local-storage-adapter.ts # StorageService adapter over localStorage (tests, dev)
+│   │   ├── fail-soft-storage.ts     # Never throws; falls back to the localStorage adapter when chrome.storage is missing
 │   │   ├── app-db.ts                # Dexie database + versioned migration chain (v1→v4)
-│   │   └── index.ts                 # Exports `storage` (KV) and `zustandChromeStorage` (persist adapter)
+│   │   └── index.ts                 # Exports `storage` (fail-soft KV) and `zustandChromeStorage` (persist shim over `storage`)
 │   ├── store/                       # Zustand stores
 │   │   ├── settings-store.ts        # userName, moduleStates, units, background — persisted via zustandChromeStorage
 │   │   ├── view-store.ts            # Ambient dashboard/settings view toggle (unpersisted)
@@ -147,6 +152,7 @@ src/
 │   ├── types/
 │   │   ├── module.ts                # ModuleDefinition, ModuleConfig, CurrentVerse
 │   │   ├── table.ts                 # Dexie row types (TodoItem, etc.)
+│   │   ├── temperature.ts           # TemperatureUnit, shared by settings and weather
 │   │   ├── app-config.ts
 │   │   ├── feature-toggles.ts
 │   │   └── background-presets.ts
@@ -249,9 +255,9 @@ Settings is prefetched (`import('./settings/SettingsPage')`) in a `useEffect` af
 Module hook calls its service (UI never touches storage/fetch directly)
   │
   ▼
-Service reads its cache first
+Service asks its cached resource (shared/lib/cached-resource) — it supplies only a policy and a fetcher
   │
-  ├── Cache hit + same dateKey (getTodayKey())  → return immediately, zero network
+  ├── Cache hit + policy says fresh (bible: same dateKey; weather: TTL + location + unit) → return immediately, zero network
   │
   └── Cache miss / stale → fetch from API → validate with Zod at the boundary
         → write cache → return
@@ -259,8 +265,8 @@ Service reads its cache first
 
 Modules split into two shapes depending on what they persist:
 
-- **Network + KV-cached** (bible, weather): `services/` call `storage/` in the module, which wraps `chrome.storage.local` via the shared `StorageService`/`chrome-adapter`. Freshness is keyed by `dateKey` (bible) or a short TTL (weather).
-- **Relational, offline-only** (todo, prayer, gratitude, focus, quick-actions favorites): `services/` import `db` from `shared/storage/app-db.ts` (Dexie) directly — there's no per-module `storage/` folder because IndexedDB is already the abstraction. No network step at all.
+- **Network + KV-cached** (bible, weather): `services/` define a cache policy and a fetcher and hand them to `createCachedResource`, which reads and writes through the shared `storage`. Freshness is keyed by `dateKey` (bible) or a short TTL plus location and unit (weather).
+- **Relational, offline-only** (todo, prayer, gratitude, focus, quick-actions favorites): `services/` import `db` from `shared/storage/app-db.ts` (Dexie) directly — there's no per-module `storage/` folder because IndexedDB is already the abstraction. Gratitude and focus share `createDailyEntry` for their one-row-per-day upsert. Hooks read through `useLiveCollection(querier)` instead of loading by hand, so writes (including from another tab) update the UI with no re-read step. No network step at all.
 - **Static/bundled** (clock, quotes): no service layer needed — quotes picks deterministically via `shared/lib/daily-rotation.ts` (`dayOfYear() % items.length`) so "today's quote" is stable without any storage read.
 
 The user never stares at a blank tab: skeletons render before any cache read resolves, and a stale-but-present cache always wins over waiting on the network.
@@ -281,14 +287,14 @@ Feature Service (e.g. VerseService)
   ▼
 Two persistence paths, chosen per data shape — not one shared abstraction:
   │
-  ├── StorageService (chrome-adapter) → chrome.storage.local
+  ├── StorageService (fail-soft: chrome adapter, localStorage fallback)
   │     Settings, feature flags, small KV caches (verse, weather)
   │
   └── db (Dexie), imported directly from shared/storage/app-db.ts
         Relational content: todos, prayer requests, gratitude, favorites
 ```
 
-The UI never calls `fetch` directly, and it never calls `chrome.storage` or Dexie directly — both are reached through a service. But the two storage backends are separate, purpose-built interfaces rather than one abstraction with two adapters: `StorageService` only ever wraps `chrome.storage.local`, and Dexie-backed services hold `db` as their persistence layer instead of going through `StorageService`.
+The UI never calls `fetch` directly, and it never calls `chrome.storage` or Dexie directly — both are reached through a service. But the two storage backends are separate, purpose-built interfaces rather than one abstraction with two adapters: `StorageService` covers KV data, and Dexie-backed services hold `db` as their persistence layer instead of going through `StorageService`.
 
 ---
 
@@ -305,11 +311,11 @@ storage.remove(key: string): Promise<void>
 storage.clear(): Promise<void>
 ```
 
-`ChromeStorageAdapter` is the only implementation today, wrapping `chrome.storage.local` (on-device; cross-device sync via `chrome.storage.sync` is a future option behind the same interface). A second, parallel piece — `zustandChromeStorage` in `shared/storage/index.ts` — adapts the same `chrome.storage.local` calls to Zustand's `persist` middleware contract and falls back to `localStorage` when the Chrome API is unavailable (tests, dev). It's what `settings-store` uses; it does not go through `StorageService`.
+The exported `storage` is a `FailSoftStorage` over two real adapters: `ChromeStorageAdapter` (`chrome.storage.local`, on-device; cross-device sync via `chrome.storage.sync` is a future option behind the same interface) and `LocalStorageAdapter`. It never throws, and falls back to `localStorage` when the Chrome API is unavailable (tests, dev), so module storage code carries no try/catch. `zustandChromeStorage` is a thin shim over `storage` that adapts it to Zustand's `persist` contract; `settings-store` uses it and keeps the key `new-day:settings`.
 
 **Relational data** (todos, prayer requests, gratitude entries, favorites) goes straight to `db`, a Dexie instance exported from `shared/storage/app-db.ts`, with a versioned migration chain (v1→v4). Services import `db` directly — there is no intermediate storage interface for this path, since Dexie's API is already the abstraction.
 
-Because `StorageService` is a named interface with one implementation, adding a second backend (e.g. porting the KV path to Firefox or a web app) means writing a new adapter and swapping it in — the Dexie path would need its own equivalent effort, since it isn't behind that interface.
+Because `StorageService` is a named interface with two adapters, porting the KV path to another platform (e.g. Firefox or a web app) means writing a new adapter and swapping it in — the Dexie path would need its own equivalent effort, since it isn't behind that interface.
 
 ---
 
@@ -322,13 +328,11 @@ Because `StorageService` is a named interface with one implementation, adding a 
 - Enabled modules list
 - Background image selection
 
-**Local state (React state / hooks):**
+**Module data (hooks, not Zustand):**
 
-- Todo items
-- Prayer requests
-- Weather data
-- Current verse
-- Gratitude entries
+- Todo items, prayer requests, gratitude and focus entries, favorites — Dexie, read through `useLiveCollection`
+- Weather data and the daily verse — `cached-resource` over the KV store, fetched via TanStack Query
+- Current verse — ambient `current-verse-store` (unpersisted)
 
 Rule of thumb: if only one module cares about it, keep it local. If the dashboard shell or settings page also needs it, promote to Zustand.
 
@@ -374,6 +378,7 @@ Each module is wrapped in its own error boundary. If the weather API is down, th
 | --------------------------------- | -------------------------------------- | ---------------------------------------------- |
 | No backend, all on-device         | Privacy, zero infra, instant reads     | No cross-device sync; no server analytics      |
 | Two storage backends (KV + Dexie) | Right tool per data shape              | Two mental models; migrations only Dexie-side  |
+| Dexie `liveQuery` hooks           | No manual re-reads; cross-tab freshness | Hooks depend on Dexie; saves show via optimistic override until the query emits |
 | Static import registry            | Simple, type-safe, tree-shakeable      | A registry edit per module (no runtime plugins) |
 | Lazy modules + prefetch Settings  | Tiny critical bundle, fast first paint | Prefetch / Suspense orchestration complexity   |
 | Feature flags from bundled YAML   | Simple, no flag service                | Flags fixed at build time — no runtime rollout |

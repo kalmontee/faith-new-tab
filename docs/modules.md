@@ -155,8 +155,10 @@ Not a registered module — it's part of the dashboard shell.
 
 1. Create `src/modules/<name>/` with the standard internal structure (api, components, hooks, services, storage, types, index).
 2. In `index.ts`, export a `ModuleDefinition` object.
-3. Import and register it in `src/shared/lib/module-registry.ts`.
+3. Import and register it in `src/shared/lib/module-registry.ts`; `resolveModules` applies user overrides.
 4. The dashboard renderer picks it up automatically.
 5. Add a toggle in the settings page under "Dashboard → Modules."
+
+Persistent modules read through `useLiveCollection`; network-backed modules define a policy and fetcher for `createCachedResource`. `shared/` never imports from `modules/` (enforced by lint), except the registry.
 
 Zero changes to the dashboard shell, routing, or other modules.
