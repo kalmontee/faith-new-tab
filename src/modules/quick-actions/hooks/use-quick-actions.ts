@@ -20,8 +20,13 @@ function formatVerse(verse: CurrentVerse): string {
 
 export function useQuickActions(): UseQuickActionsResult {
   const verse = useCurrentVerseStore((s) => s.verse);
-  const readFavorite = useCallback(async () => (verse ? isFavorited(verse.reference) : false), [verse]);
-  const { data: isFavorite = false } = useLiveCollection(readFavorite);
+  const readFavorite = useCallback(async () => {
+    const reference = verse?.reference;
+    return { reference, favorited: reference ? await isFavorited(reference) : false };
+  }, [verse]);
+  const { data: favorite } = useLiveCollection(readFavorite);
+  // A result for the previous verse must not be shown while the new one loads.
+  const isFavorite = !!verse && favorite?.reference === verse.reference && favorite.favorited;
 
   const copyVerse = useCallback(async () => {
     if (!verse) return;

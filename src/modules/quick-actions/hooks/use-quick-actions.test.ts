@@ -64,6 +64,19 @@ describe('useQuickActions', () => {
     await waitFor(() => expect(result.current.isFavorite).toBe(true));
   });
 
+  it('should not show the previous verse’s favorite state after the verse changes', async () => {
+    await db.favorites.add({ ...verse, createdAt: 1 } as never);
+    useCurrentVerseStore.setState({ verse });
+    const { result } = renderHook(() => useQuickActions());
+    await waitFor(() => expect(result.current.isFavorite).toBe(true));
+
+    const other: CurrentVerse = { reference: 'Psalm 23:1', text: 'The Lord is my shepherd.', translation: 'NIV' };
+    act(() => useCurrentVerseStore.setState({ verse: other }));
+
+    expect(result.current.isFavorite).toBe(false);
+    await waitFor(() => expect(result.current.isFavorite).toBe(false));
+  });
+
   it('should copy the formatted verse to the clipboard', async () => {
     useCurrentVerseStore.setState({ verse });
     const { result } = renderHook(() => useQuickActions());
