@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { Sprout, Bookmark, Sun, Moon, Settings } from 'lucide-react';
 
 import { cn } from '@/shared/lib/utils';
@@ -42,7 +42,7 @@ export function DashboardHeader({ onSettingsClick }: DashboardHeaderProps) {
   const [isDark, setIsDark] = useState(true);
 
   return (
-    <motion.header
+    <m.header
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
@@ -69,6 +69,6 @@ export function DashboardHeader({ onSettingsClick }: DashboardHeaderProps) {
           <Bookmark size={20} />
         </HeaderIconButton>
       </div>
-    </motion.header>
+    </m.header>
   );
 }
