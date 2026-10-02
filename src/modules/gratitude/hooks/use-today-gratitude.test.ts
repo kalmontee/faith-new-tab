@@ -4,7 +4,7 @@ import { useTodayGratitude } from './use-today-gratitude';
 import type { GratitudeEntry } from '@/shared/types/table';
 
 // Unit test: hook orchestration over the gratitude service (mocked; the service
-// is covered by gratitude-service.test.ts).
+// is covered by daily-entry.test.ts).
 vi.mock('../services/gratitude-service', () => ({
   getTodayGratitude: vi.fn(),
   saveGratitude: vi.fn(),
