@@ -4,7 +4,7 @@ import { ArrowLeft } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import { Toggle } from '@/shared/ui/toggle';
 import { useSettingsStore } from '@/shared/store/settings-store';
-import { getAllModules } from '@/shared/lib/module-registry';
+import { resolveModules } from '@/shared/lib/module-registry';
 import { BackgroundPicker } from './BackgroundPicker';
 import { UnitToggle } from './UnitToggle';
 
@@ -38,15 +38,10 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
     setBackgroundSolidColor,
   } = useSettingsStore();
   const [nameValue, setNameValue] = useState(userName);
-  const modules = getAllModules();
+  const modules = resolveModules(moduleStates);
 
   function handleNameBlur() {
     setUserName(nameValue.trim());
-  }
-
-  function isEnabled(id: string, defaultEnabled: boolean) {
-    const override = moduleStates[id];
-    return override !== undefined ? override : defaultEnabled;
   }
 
   return (
@@ -137,7 +132,7 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
                     </div>
                   </div>
                   <Toggle
-                    checked={isEnabled(mod.id, mod.enabled)}
+                    checked={mod.enabled}
                     onCheckedChange={(enabled) => setModuleEnabled(mod.id, enabled)}
                     label={`Toggle ${mod.title}`}
                   />

@@ -9,7 +9,5 @@ export const quickActionsModule: ModuleDefinition = {
   icon: Zap,
   enabled: true,
   component: lazy(() => import('./components/QuickActionsCard')),
-  refreshInterval: 'never',
   gridArea: 'quick-actions',
-  requiresNetwork: false,
 };

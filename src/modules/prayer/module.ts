@@ -9,7 +9,5 @@ export const prayerModule: ModuleDefinition = {
   icon: HandHeart,
   enabled: true,
   component: lazy(() => import('./components/PrayerCard')),
-  refreshInterval: 'never',
   gridArea: 'prayer',
-  requiresNetwork: false,
 };

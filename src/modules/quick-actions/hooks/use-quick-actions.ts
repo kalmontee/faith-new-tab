@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback } from 'react';
+import { useLiveCollection } from '@/shared/hooks/use-live-collection';
 import { useCurrentVerseStore } from '@/shared/store/current-verse-store';
 import { useViewStore } from '@/shared/store/view-store';
 import { type CurrentVerse } from '@/shared/types/module';
@@ -19,13 +20,13 @@ function formatVerse(verse: CurrentVerse): string {
 
 export function useQuickActions(): UseQuickActionsResult {
   const verse = useCurrentVerseStore((s) => s.verse);
-  const [isFavorite, setIsFavorite] = useState(false);
-
-  useEffect(() => {
-    if (!verse) return;
-
-    isFavorited(verse.reference).then(setIsFavorite);
+  const readFavorite = useCallback(async () => {
+    const reference = verse?.reference;
+    return { reference, favorited: reference ? await isFavorited(reference) : false };
   }, [verse]);
+  const { data: favorite } = useLiveCollection(readFavorite);
+  // A result for the previous verse must not be shown while the new one loads.
+  const isFavorite = !!verse && favorite?.reference === verse.reference && favorite.favorited;
 
   const copyVerse = useCallback(async () => {
     if (!verse) return;
@@ -48,7 +49,7 @@ export function useQuickActions(): UseQuickActionsResult {
   const toggleFavorite = useCallback(async () => {
     if (!verse) return;
 
-    setIsFavorite(await toggleFavoriteInStore(verse));
+    await toggleFavoriteInStore(verse);
   }, [verse]);
 
   const openSettings = useCallback(() => {

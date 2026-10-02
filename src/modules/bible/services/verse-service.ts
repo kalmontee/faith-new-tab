@@ -1,37 +1,18 @@
+import { createCachedResource } from '@/shared/lib/cached-resource';
 import { getTodayKey } from '@/shared/utils/date';
-import { fetchDailyVerse, fetchRandomVerse } from '../api/verse-api';
-import { getCachedVerse, setCachedVerse } from '../storage/verse-storage';
-import type { DailyVerse } from '../types';
+import { fetchDailyVerse } from '../api/verse-api';
+import type { CachedVerseEntry, DailyVerse } from '../types';
 
-// Cap random re-rolls so the "New Verse" button never loops forever.
-const MAX_NEW_VERSE_ATTEMPTS = 3;
+const dailyVerse = createCachedResource<void, DailyVerse, CachedVerseEntry>({
+  fetcher: fetchDailyVerse,
+  policy: {
+    storageKey: 'bible:cached-verse',
+    isFresh: (entry, _key, now) => entry.dateKey === getTodayKey(new Date(now)),
+    toEntry: (verse, _key, now) => ({ verse, dateKey: getTodayKey(new Date(now)) }),
+    toData: (entry) => entry.verse,
+  },
+});
 
-export async function getDailyVerse(): Promise<DailyVerse> {
-  const todayKey = getTodayKey();
-  const cached = await getCachedVerse();
-
-  if (cached && cached.dateKey === todayKey) {
-    return cached.verse;
-  }
-
-  const verse = await fetchDailyVerse();
-  await setCachedVerse({ verse, dateKey: todayKey });
-  return verse;
-}
-
-/**
- * @deprecated Use getDailyVerse() instead. This function is only used for the "New Verse" button, which is now deprecated/not in use.
- * @param currentReference The reference of the verse currently displayed on screen. If the new verse fetched is the same as this reference, it will re-roll up to MAX_NEW_VERSE_ATTEMPTS times.
- * @returns A Promise that resolves to a DailyVerse object.
- */
-export async function getNewVerse(currentReference?: string): Promise<DailyVerse> {
-  let verse = await fetchRandomVerse();
-
-  // Re-roll if OurManna hands back the verse already on screen.
-  for (let attempt = 1; attempt < MAX_NEW_VERSE_ATTEMPTS && verse.reference === currentReference; attempt++) {
-    verse = await fetchRandomVerse();
-  }
-
-  await setCachedVerse({ verse, dateKey: getTodayKey() });
-  return verse;
+export function getDailyVerse(): Promise<DailyVerse> {
+  return dailyVerse.get();
 }

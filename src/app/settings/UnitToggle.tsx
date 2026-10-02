@@ -1,5 +1,5 @@
 import { cn } from '@/shared/lib/utils';
-import type { TemperatureUnit } from '@/modules/weather/types';
+import type { TemperatureUnit } from '@/shared/types/temperature';
 
 export function UnitToggle({ value, onChange }: { value: TemperatureUnit; onChange: (unit: TemperatureUnit) => void }) {
   return (

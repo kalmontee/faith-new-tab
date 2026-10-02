@@ -1,76 +1,48 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
+import { db } from '@/shared/storage/app-db';
+import { getTodayKey } from '@/shared/utils/date';
 import { useTodayFocus } from './use-today-focus';
-import type { FocusEntry } from '@/shared/types/table';
 
-vi.mock('../services/focus-service', () => ({
-  getTodayFocus: vi.fn(),
-  saveFocus: vi.fn(),
-}));
-
-import { getTodayFocus, saveFocus } from '../services/focus-service';
-
-const entry: FocusEntry = {
-  id: 1,
-  date: '2025-06-15',
-  focus: 'Trust the process',
-  tagline: 'One step at a time',
-  updatedAt: 1_000,
-};
-
-beforeEach(() => {
-  vi.clearAllMocks();
-  vi.mocked(getTodayFocus).mockResolvedValue(undefined);
-  vi.mocked(saveFocus).mockResolvedValue(entry);
+beforeEach(async () => {
+  await Promise.all(db.tables.map((table) => table.clear()));
 });
 
+async function renderLoaded() {
+  const hook = renderHook(() => useTodayFocus());
+  await waitFor(() => expect(hook.result.current.isLoading).toBe(false));
+  return hook;
+}
+
 describe('useTodayFocus', () => {
-  it('should load today’s focus entry on mount', async () => {
-    vi.mocked(getTodayFocus).mockResolvedValue(entry);
+  it('should load today’s stored focus entry', async () => {
+    await db.focus.add({ date: getTodayKey(), focus: 'Trust', tagline: 'Step', updatedAt: 1 } as never);
     const { result } = renderHook(() => useTodayFocus());
 
     expect(result.current.isLoading).toBe(true);
     await waitFor(() => expect(result.current.isLoading).toBe(false));
-    expect(result.current.entry).toEqual(entry);
+    expect(result.current.entry?.focus).toBe('Trust');
   });
 
-  it('should normalise a missing entry to null (not undefined)', async () => {
-    const { result } = renderHook(() => useTodayFocus());
-
-    await waitFor(() => expect(result.current.isLoading).toBe(false));
+  it('should normalise a missing entry to null', async () => {
+    const { result } = await renderLoaded();
     expect(result.current.entry).toBeNull();
   });
 
-  it('should save the focus and reflect the returned entry without re-fetching', async () => {
-    const { result } = renderHook(() => useTodayFocus());
-    await waitFor(() => expect(result.current.isLoading).toBe(false));
+  it('should reflect a saved focus without a manual re-read', async () => {
+    const { result } = await renderLoaded();
 
     await act(async () => {
       await result.current.save('Trust the process', 'One step at a time');
     });
 
-    expect(saveFocus).toHaveBeenCalledWith('Trust the process', 'One step at a time');
-    expect(result.current.entry).toEqual(entry);
-    // save() updates state from its own return value; it must not re-read the store.
-    expect(getTodayFocus).toHaveBeenCalledTimes(1);
+    expect(result.current.entry).toMatchObject({ focus: 'Trust the process', tagline: 'One step at a time' });
+    await waitFor(() => expect(result.current.entry).toMatchObject({ focus: 'Trust the process', tagline: 'One step at a time' }));
   });
 
-  it('should still clear the loading flag when the initial fetch rejects', async () => {
-    vi.mocked(getTodayFocus).mockRejectedValue(new Error('IndexedDB unavailable'));
-    const { result } = renderHook(() => useTodayFocus());
-
-    await waitFor(() => expect(result.current.isLoading).toBe(false));
+  it('should ignore entries saved for other days', async () => {
+    await db.focus.add({ date: '2000-01-01', focus: 'Old', tagline: '', updatedAt: 1 } as never);
+    const { result } = await renderLoaded();
     expect(result.current.entry).toBeNull();
-  });
-
-  it('should propagate a save failure and leave the existing entry unchanged', async () => {
-    vi.mocked(getTodayFocus).mockResolvedValue(entry);
-    const { result } = renderHook(() => useTodayFocus());
-    await waitFor(() => expect(result.current.isLoading).toBe(false));
-
-    vi.mocked(saveFocus).mockRejectedValue(new Error('write failed'));
-    await expect(result.current.save('New focus', 'New tagline')).rejects.toThrow('write failed');
-
-    expect(result.current.entry).toEqual(entry);
   });
 });

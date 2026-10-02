@@ -1,39 +1,23 @@
+import { ChromeStorageAdapter } from './chrome-adapter';
+import { FailSoftStorage } from './fail-soft-storage';
+import { LocalStorageAdapter } from './local-storage-adapter';
+
 export { ChromeStorageAdapter } from './chrome-adapter';
+export { LocalStorageAdapter } from './local-storage-adapter';
 export type { StorageService } from './storage-service';
 
-import { ChromeStorageAdapter } from './chrome-adapter';
+export const storage = new FailSoftStorage(new ChromeStorageAdapter(), new LocalStorageAdapter());
 
-export const storage = new ChromeStorageAdapter();
-
-// Zustand-compatible async storage backed by chrome.storage.local.
-// Falls back to localStorage when chrome APIs are unavailable (tests, dev).
+// Zustand persists JSON strings; other writers may have stored a parsed object.
 export const zustandChromeStorage = {
   getItem: async (name: string): Promise<string | null> => {
-    try {
-      const result = await chrome.storage.local.get(name);
-      const value = result[name];
+    const value = await storage.get<unknown>(name);
+    if (value === null) return null;
 
-      if (value === undefined || value === null) return null;
-
-      return typeof value === 'string' ? value : JSON.stringify(value);
-    } catch {
-      return localStorage.getItem(name);
-    }
+    return typeof value === 'string' ? value : JSON.stringify(value);
   },
 
-  setItem: async (name: string, value: string): Promise<void> => {
-    try {
-      await chrome.storage.local.set({ [name]: value });
-    } catch {
-      localStorage.setItem(name, value);
-    }
-  },
+  setItem: (name: string, value: string): Promise<void> => storage.set(name, value),
 
-  removeItem: async (name: string): Promise<void> => {
-    try {
-      await chrome.storage.local.remove(name);
-    } catch {
-      localStorage.removeItem(name);
-    }
-  },
+  removeItem: (name: string): Promise<void> => storage.remove(name),
 };

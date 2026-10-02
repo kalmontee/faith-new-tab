@@ -9,7 +9,5 @@ export const gratitudeModule: ModuleDefinition = {
   icon: Heart,
   enabled: true,
   component: lazy(() => import('./components/GratitudeCard')),
-  refreshInterval: 'never',
   gridArea: 'gratitude',
-  requiresNetwork: false,
 };

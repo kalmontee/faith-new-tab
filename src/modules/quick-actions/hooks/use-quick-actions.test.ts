@@ -6,15 +6,7 @@ import { useCurrentVerseStore } from '@/shared/store/current-verse-store';
 import { useViewStore } from '@/shared/store/view-store';
 import type { CurrentVerse } from '@/shared/types/module';
 
-// Unit test: the hook reads the "verse on screen" from the current-verse store,
-// formats it for the clipboard / Web Share API, and delegates favouriting to the
-// favorites service (covered by favorites-service.test.ts).
-vi.mock('../services/favorites-service', () => ({
-  isFavorited: vi.fn(),
-  toggleFavorite: vi.fn(),
-}));
-
-import { isFavorited, toggleFavorite } from '../services/favorites-service';
+import { db } from '@/shared/storage/app-db';
 
 const verse: CurrentVerse = {
   reference: 'Philippians 4:13',
@@ -27,11 +19,10 @@ const writeText = vi.fn();
 const originalClipboardDescriptor = Object.getOwnPropertyDescriptor(navigator, 'clipboard');
 const originalShareDescriptor = Object.getOwnPropertyDescriptor(navigator, 'share');
 
-beforeEach(() => {
+beforeEach(async () => {
   vi.clearAllMocks();
+  await Promise.all(db.tables.map((table) => table.clear()));
   useCurrentVerseStore.setState({ verse: null });
-  vi.mocked(isFavorited).mockResolvedValue(false);
-  vi.mocked(toggleFavorite).mockResolvedValue(true);
 
   writeText.mockResolvedValue(undefined);
   Object.defineProperty(navigator, 'clipboard', {
@@ -64,14 +55,26 @@ describe('useQuickActions', () => {
   });
 
   it('should reflect the favourite state of the current verse on mount', async () => {
+    await db.favorites.add({ ...verse, createdAt: 1 } as never);
     useCurrentVerseStore.setState({ verse });
-    vi.mocked(isFavorited).mockResolvedValue(true);
 
     const { result } = renderHook(() => useQuickActions());
 
     expect(result.current.hasVerse).toBe(true);
     await waitFor(() => expect(result.current.isFavorite).toBe(true));
-    expect(isFavorited).toHaveBeenCalledWith(verse.reference);
+  });
+
+  it('should not show the previous verse’s favorite state after the verse changes', async () => {
+    await db.favorites.add({ ...verse, createdAt: 1 } as never);
+    useCurrentVerseStore.setState({ verse });
+    const { result } = renderHook(() => useQuickActions());
+    await waitFor(() => expect(result.current.isFavorite).toBe(true));
+
+    const other: CurrentVerse = { reference: 'Psalm 23:1', text: 'The Lord is my shepherd.', translation: 'NIV' };
+    act(() => useCurrentVerseStore.setState({ verse: other }));
+
+    expect(result.current.isFavorite).toBe(false);
+    await waitFor(() => expect(result.current.isFavorite).toBe(false));
   });
 
   it('should copy the formatted verse to the clipboard', async () => {
@@ -120,10 +123,8 @@ describe('useQuickActions', () => {
     expect(writeText).toHaveBeenCalledWith(formatted);
   });
 
-  it('should toggle the favourite and update the flag from the service result', async () => {
+  it('should toggle the favourite and update the flag from storage', async () => {
     useCurrentVerseStore.setState({ verse });
-    vi.mocked(isFavorited).mockResolvedValue(false);
-    vi.mocked(toggleFavorite).mockResolvedValue(true);
 
     const { result } = renderHook(() => useQuickActions());
     await waitFor(() => expect(result.current.isFavorite).toBe(false));
@@ -132,8 +133,8 @@ describe('useQuickActions', () => {
       await result.current.toggleFavorite();
     });
 
-    expect(toggleFavorite).toHaveBeenCalledWith(verse);
-    expect(result.current.isFavorite).toBe(true);
+    await waitFor(() => expect(result.current.isFavorite).toBe(true));
+    expect(await db.favorites.count()).toBe(1);
   });
 
   it('should open the settings view via the view store', () => {
@@ -160,6 +161,6 @@ describe('useQuickActions', () => {
       await result.current.toggleFavorite();
     });
 
-    expect(toggleFavorite).not.toHaveBeenCalled();
+    expect(await db.favorites.count()).toBe(0);
   });
 });

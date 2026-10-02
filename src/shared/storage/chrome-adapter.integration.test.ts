@@ -85,3 +85,11 @@ describe('ChromeStorageAdapter (integration)', () => {
     await expect(adapter.get('settings')).rejects.toThrow('quota');
   });
 });
+
+describe('ChromeStorageAdapter without chrome', () => {
+  it('should throw when chrome.storage is unavailable', async () => {
+    vi.stubGlobal('chrome', undefined);
+
+    await expect(adapter.get('k')).rejects.toThrow();
+  });
+});

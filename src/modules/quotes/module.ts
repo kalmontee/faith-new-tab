@@ -9,7 +9,5 @@ export const quotesModule: ModuleDefinition = {
   icon: MessageCircle,
   enabled: true,
   component: lazy(() => import('./components/QuoteCard')),
-  refreshInterval: 'daily',
   gridArea: 'quotes',
-  requiresNetwork: false,
 };

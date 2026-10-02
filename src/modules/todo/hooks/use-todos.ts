@@ -1,5 +1,3 @@
-import { useState, useEffect, useCallback } from 'react';
-
 import {
   getAllTodos,
   addTodo as addTodoToStore,
@@ -8,7 +6,11 @@ import {
   removeTodo as removeTodoFromStore,
   reorderTodos as reorderTodosInStore,
 } from '../services/todo-service';
+import { useOptimisticOverride } from '@/shared/hooks/use-optimistic-override';
+import { useLiveCollection } from '@/shared/hooks/use-live-collection';
 import type { TodoItem } from '@/shared/types/table';
+
+const EMPTY: TodoItem[] = [];
 
 export interface UseTodosResult {
   todos: TodoItem[];
@@ -21,47 +23,28 @@ export interface UseTodosResult {
 }
 
 export function useTodos(): UseTodosResult {
-  const [todos, setTodos] = useState<TodoItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data, isLoading } = useLiveCollection(getAllTodos);
+  const [todos, setOrder, clearOrder] = useOptimisticOverride(data ?? EMPTY);
 
-  useEffect(() => {
-    getAllTodos()
-      .then(setTodos)
-      .catch(() => setTodos([]))
-      .finally(() => setIsLoading(false));
-  }, []);
-
-  const addTodo = useCallback(async (text: string) => {
-    await addTodoToStore(text);
-    setTodos(await getAllTodos());
-  }, []);
-
-  const editTodo = useCallback(async (id: number, text: string) => {
-    await editTodoInStore(id, text);
-    setTodos(await getAllTodos());
-  }, []);
-
-  const toggleTodo = useCallback(async (id: number) => {
-    await toggleTodoInStore(id);
-    setTodos(await getAllTodos());
-  }, []);
-
-  const removeTodo = useCallback(async (id: number) => {
-    await removeTodoFromStore(id);
-    setTodos(await getAllTodos());
-  }, []);
-
-  // Apply the new order to local state immediately so the drag feels instant,
-  // then persist. If the write fails, re-read to roll back to the stored truth.
-  const reorderTodos = useCallback(async (reordered: TodoItem[]) => {
-    setTodos(reordered);
+  const reorderTodos = async (reordered: TodoItem[]) => {
+    setOrder(reordered);
     try {
       await reorderTodosInStore(reordered.map((todo) => todo.id));
     } catch (error) {
-      setTodos(await getAllTodos());
+      clearOrder();
       throw error;
     }
-  }, []);
+  };
 
-  return { todos, isLoading, addTodo, editTodo, toggleTodo, removeTodo, reorderTodos };
+  return {
+    todos,
+    isLoading,
+    addTodo: async (text) => {
+      await addTodoToStore(text);
+    },
+    editTodo: editTodoInStore,
+    toggleTodo: toggleTodoInStore,
+    removeTodo: removeTodoFromStore,
+    reorderTodos,
+  };
 }

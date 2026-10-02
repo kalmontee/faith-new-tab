@@ -15,21 +15,8 @@ function registerModule(module: ModuleDefinition): void {
   registry.set(module.id, module);
 }
 
-export function getModule(id: string): ModuleDefinition | undefined {
-  return registry.get(id);
-}
-
-export function getAllModules(): ModuleDefinition[] {
-  return Array.from(registry.values());
-}
-
-export function getEnabledModules(): ModuleDefinition[] {
-  return getAllModules().filter((m) => m.enabled);
-}
-
-export function setModuleEnabled(id: string, enabled: boolean): void {
-  const mod = registry.get(id);
-  if (mod) registry.set(id, { ...mod, enabled });
+export function resolveModules(moduleStates: Record<string, boolean>): ModuleDefinition[] {
+  return Array.from(registry.values(), (mod) => ({ ...mod, enabled: moduleStates[mod.id] ?? mod.enabled }));
 }
 
 // Register all modules in display order

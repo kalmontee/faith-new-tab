@@ -11,7 +11,7 @@ Cards float over a full-bleed background image with glassmorphism — translucen
 ## Features
 
 - **Live clock & greeting** — large-format time, date, and a greeting that changes with the time of day
-- **Daily Bible verse** — cached offline, "New Verse" refresh, KJV out of the box with optional ESV / NKJV via API.Bible
+- **Daily Bible verse** — cached offline, KJV out of the box with optional ESV / NKJV via API.Bible
 - **Weather** — current conditions by geolocation, °F/°C toggle, 30-minute cache
 - **Today's Focus** — a short daily intention with an optional tagline
 - **Prayer Requests** — add, mark answered, remove — persisted locally
@@ -167,7 +167,7 @@ Chrome (Manifest V3)
 
 ### Deep dives
 
-**Module registry — the composition core.** Each module ships a `ModuleDefinition`: `id`, `title`, `icon`, a **lazy** `component`, and metadata (`refreshInterval`, `gridArea`, `requiresNetwork`, optional `settingsComponent`). `ModuleRenderer` loops the registry, applies the user's enable/disable overrides from the settings store, and places each card by `gridArea`. Adding a module is a self-contained slice plus one `registerModule` call — the dashboard shell never changes. The **no-cross-module-imports** rule is the invariant that keeps the platform modular.
+**Module registry — the composition core.** Each module ships a `ModuleDefinition`: `id`, `title`, `icon`, a **lazy** `component`, and metadata (`gridArea`, optional `settingsComponent`). `ModuleRenderer` loops the registry, applies the user's enable/disable overrides from the settings store, and places each card by `gridArea`. Adding a module is a self-contained slice plus one `registerModule` call — the dashboard shell never changes. The **no-cross-module-imports** rule is the invariant that keeps the platform modular.
 
 **Storage — two backends, one discipline.** Small hot config (settings, the daily verse cache) lives in `chrome.storage.local` behind the `StorageService` interface. List and entry data (todos, prayers, gratitude, focus, favorites) lives in IndexedDB via Dexie, with a **versioned migration chain** (`app-db.ts`, v1→v4, including an upgrade that backfills `position` onto existing todos). A Zustand-compatible async adapter persists the settings store to Chrome Storage and falls back to `localStorage` when Chrome APIs are absent. Every storage call **fails soft**, so tests and non-extension contexts degrade instead of throwing.
 
@@ -179,8 +179,8 @@ Chrome (Manifest V3)
 
 ### Reliability
 
-- **Failure isolation.** Each module is `Suspense`-wrapped with a skeleton fallback; `requiresNetwork` marks progressive-enhancement candidates. One module failing is contained to its own card.
-- **No single point of failure that matters.** No backend means no backend outage. The one external dependency (OurManna) is masked by the 24-hour cache — a failed fetch simply serves the last good verse.
+- **Failure isolation.** Each module is `Suspense`-wrapped with a skeleton fallback; one module failing is contained to its own card.
+- **No single point of failure that matters.** No backend means no backend outage. The one external dependency (OurManna) is masked by the daily cache — a fresh cached verse never touches the network.
 - **Schema safety.** Dexie's versioned migrations, with upgrade backfills, are the recovery story for local data.
 - **Testing.** Vitest covers services and hooks; the storage layer has integration tests against `fake-indexeddb`. husky + lint-staged gate every commit.
 
@@ -194,7 +194,7 @@ Chrome (Manifest V3)
 | Lazy modules + Settings prefetch  | Tiny critical bundle, fast first paint | Suspense / prefetch orchestration                    |
 | Feature flags from bundled YAML   | Simple, no flag service                | Flags are fixed at build time — no runtime rollout   |
 
-**Next up:** the MV3 background service worker is currently a stub. Wiring it to the already-declared `refreshInterval` metadata (scheduled cache warming, notifications) is the natural next step, followed by optional cross-device sync via `chrome.storage.sync` behind the existing `StorageService`.
+**Next up:** the MV3 background service worker is currently a stub. Wiring it to `cached-resource` (scheduled cache warming, notifications) is the natural next step, followed by optional cross-device sync via `chrome.storage.sync` behind the existing `StorageService`.
 
 ---
 

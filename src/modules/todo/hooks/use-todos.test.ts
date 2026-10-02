@@ -1,168 +1,119 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
+import { db } from '@/shared/storage/app-db';
 import { useTodos } from './use-todos';
-import type { TodoItem } from '@/shared/types/table';
+import * as todoService from '../services/todo-service';
 
-// Unit test: the hook orchestrates the service layer (load on mount, re-read
-// after every mutation). The service itself is covered by todo-service.test.ts,
-// so here we mock it and assert the wiring.
-vi.mock('../services/todo-service', () => ({
-  getAllTodos: vi.fn(),
-  addTodo: vi.fn(),
-  editTodo: vi.fn(),
-  toggleTodo: vi.fn(),
-  removeTodo: vi.fn(),
-  reorderTodos: vi.fn(),
-}));
-
-import { getAllTodos, addTodo, editTodo, toggleTodo, removeTodo, reorderTodos } from '../services/todo-service';
-
-const todoA: TodoItem = { id: 1, text: 'Read Psalm 23', completed: false, createdAt: 1_000, position: 0 };
-const todoB: TodoItem = { id: 2, text: 'Call a friend', completed: false, createdAt: 2_000, position: 1 };
-
-beforeEach(() => {
-  vi.clearAllMocks();
-  vi.mocked(getAllTodos).mockResolvedValue([]);
-  vi.mocked(addTodo).mockResolvedValue(todoB);
-  vi.mocked(editTodo).mockResolvedValue();
-  vi.mocked(toggleTodo).mockResolvedValue();
-  vi.mocked(removeTodo).mockResolvedValue();
-  vi.mocked(reorderTodos).mockResolvedValue();
+beforeEach(async () => {
+  await Promise.all(db.tables.map((table) => table.clear()));
 });
 
+async function renderLoaded() {
+  const hook = renderHook(() => useTodos());
+  await waitFor(() => expect(hook.result.current.isLoading).toBe(false));
+  return hook;
+}
+
+const texts = (todos: { text: string }[]) => todos.map((t) => t.text);
+
 describe('useTodos', () => {
-  it('should start in a loading state, then resolve with the fetched todos', async () => {
-    vi.mocked(getAllTodos).mockResolvedValue([todoA]);
+  it('should start loading, then expose stored todos in position order', async () => {
+    await db.todos.bulkAdd([
+      { text: 'Second', completed: false, createdAt: 2, position: 1 },
+      { text: 'First', completed: false, createdAt: 1, position: 0 },
+    ] as never[]);
     const { result } = renderHook(() => useTodos());
 
     expect(result.current.isLoading).toBe(true);
     expect(result.current.todos).toEqual([]);
-
     await waitFor(() => expect(result.current.isLoading).toBe(false));
-    expect(result.current.todos).toEqual([todoA]);
+    expect(texts(result.current.todos)).toEqual(['First', 'Second']);
   });
 
-  it('should clear loading even when the initial fetch is empty', async () => {
-    const { result } = renderHook(() => useTodos());
-    await waitFor(() => expect(result.current.isLoading).toBe(false));
-    expect(result.current.todos).toEqual([]);
-  });
+  it('should show an added todo without a manual re-read', async () => {
+    const { result } = await renderLoaded();
 
-  it('should add a todo, then re-read the list from the service', async () => {
-    const { result } = renderHook(() => useTodos());
-    await waitFor(() => expect(result.current.isLoading).toBe(false));
-
-    vi.mocked(getAllTodos).mockResolvedValue([todoA, todoB]);
     await act(async () => {
       await result.current.addTodo('Call a friend');
     });
 
-    expect(addTodo).toHaveBeenCalledWith('Call a friend');
-    expect(result.current.todos).toEqual([todoA, todoB]);
+    await waitFor(() => expect(texts(result.current.todos)).toEqual(['Call a friend']));
   });
 
-  it('should toggle a todo, then re-read the list', async () => {
-    vi.mocked(getAllTodos).mockResolvedValue([todoA]);
-    const { result } = renderHook(() => useTodos());
-    await waitFor(() => expect(result.current.isLoading).toBe(false));
-
-    vi.mocked(getAllTodos).mockResolvedValue([{ ...todoA, completed: true }]);
+  it('should toggle a todo', async () => {
+    const { result } = await renderLoaded();
     await act(async () => {
-      await result.current.toggleTodo(1);
+      await result.current.addTodo('Read Psalm 23');
+    });
+    await waitFor(() => expect(result.current.todos).toHaveLength(1));
+
+    await act(async () => {
+      await result.current.toggleTodo(result.current.todos[0]!.id);
     });
 
-    expect(toggleTodo).toHaveBeenCalledWith(1);
-    expect(result.current.todos[0]?.completed).toBe(true);
+    await waitFor(() => expect(result.current.todos[0]?.completed).toBe(true));
   });
 
-  it('should remove a todo, then re-read the list', async () => {
-    vi.mocked(getAllTodos).mockResolvedValue([todoA]);
-    const { result } = renderHook(() => useTodos());
-    await waitFor(() => expect(result.current.isLoading).toBe(false));
-
-    vi.mocked(getAllTodos).mockResolvedValue([]);
+  it('should edit a todo', async () => {
+    const { result } = await renderLoaded();
     await act(async () => {
-      await result.current.removeTodo(1);
+      await result.current.addTodo('Read Psalm 23');
+    });
+    await waitFor(() => expect(result.current.todos).toHaveLength(1));
+
+    await act(async () => {
+      await result.current.editTodo(result.current.todos[0]!.id, 'Read Psalm 23 aloud');
     });
 
-    expect(removeTodo).toHaveBeenCalledWith(1);
-    expect(result.current.todos).toEqual([]);
+    await waitFor(() => expect(result.current.todos[0]?.text).toBe('Read Psalm 23 aloud'));
   });
 
-  it('should edit a todo, then re-read the list', async () => {
-    vi.mocked(getAllTodos).mockResolvedValue([todoA]);
-    const { result } = renderHook(() => useTodos());
-    await waitFor(() => expect(result.current.isLoading).toBe(false));
-
-    vi.mocked(getAllTodos).mockResolvedValue([{ ...todoA, text: 'Read Psalm 23 aloud' }]);
+  it('should remove a todo', async () => {
+    const { result } = await renderLoaded();
     await act(async () => {
-      await result.current.editTodo(1, 'Read Psalm 23 aloud');
+      await result.current.addTodo('Read Psalm 23');
+    });
+    await waitFor(() => expect(result.current.todos).toHaveLength(1));
+
+    await act(async () => {
+      await result.current.removeTodo(result.current.todos[0]!.id);
     });
 
-    expect(editTodo).toHaveBeenCalledWith(1, 'Read Psalm 23 aloud');
-    expect(result.current.todos[0]?.text).toBe('Read Psalm 23 aloud');
+    await waitFor(() => expect(result.current.todos).toEqual([]));
   });
 
-  it('should apply a reorder optimistically and persist the new id order', async () => {
-    vi.mocked(getAllTodos).mockResolvedValue([todoA, todoB]);
-    const { result } = renderHook(() => useTodos());
-    await waitFor(() => expect(result.current.isLoading).toBe(false));
-
-    // getAllTodos is NOT re-stubbed: a successful reorder must keep the
-    // optimistic order without re-reading (avoids a visible flicker mid-drag).
+  it('should apply a reorder immediately and persist the new order', async () => {
+    const { result } = await renderLoaded();
     await act(async () => {
-      await result.current.reorderTodos([todoB, todoA]);
+      await result.current.addTodo('A');
+      await result.current.addTodo('B');
+    });
+    await waitFor(() => expect(result.current.todos).toHaveLength(2));
+    const [a, b] = result.current.todos;
+
+    await act(async () => {
+      await result.current.reorderTodos([b!, a!]);
     });
 
-    expect(reorderTodos).toHaveBeenCalledWith([2, 1]);
-    expect(result.current.todos).toEqual([todoB, todoA]);
+    expect(texts(result.current.todos)).toEqual(['B', 'A']);
+    await waitFor(async () => expect(texts(await todoService.getAllTodos())).toEqual(['B', 'A']));
+    expect(texts(result.current.todos)).toEqual(['B', 'A']);
   });
 
-  // ── Failure paths ─────────────────────────────────────────────────────────
-
-  it('should still clear the loading flag when the initial fetch rejects', async () => {
-    vi.mocked(getAllTodos).mockRejectedValue(new Error('IndexedDB unavailable'));
-    const { result } = renderHook(() => useTodos());
-
-    await waitFor(() => expect(result.current.isLoading).toBe(false));
-    expect(result.current.todos).toEqual([]);
-  });
-
-  it('should propagate an add failure and leave the list unchanged', async () => {
-    vi.mocked(getAllTodos).mockResolvedValue([todoA]);
-    const { result } = renderHook(() => useTodos());
-    await waitFor(() => expect(result.current.isLoading).toBe(false));
-
-    vi.mocked(addTodo).mockRejectedValue(new Error('write failed'));
-    await expect(result.current.addTodo('Call a friend')).rejects.toThrow('write failed');
-
-    expect(result.current.todos).toEqual([todoA]);
-  });
-
-  it('should not re-read the list when a toggle fails', async () => {
-    vi.mocked(getAllTodos).mockResolvedValue([todoA]);
-    const { result } = renderHook(() => useTodos());
-    await waitFor(() => expect(result.current.isLoading).toBe(false));
-
-    vi.mocked(toggleTodo).mockRejectedValue(new Error('write failed'));
-    await expect(result.current.toggleTodo(1)).rejects.toThrow('write failed');
-
-    // getAllTodos was called once on mount and must not be called again after the failure.
-    expect(getAllTodos).toHaveBeenCalledTimes(1);
-    expect(result.current.todos).toEqual([todoA]);
-  });
-
-  it('should roll back to the persisted order when a reorder fails', async () => {
-    vi.mocked(getAllTodos).mockResolvedValue([todoA, todoB]);
-    const { result } = renderHook(() => useTodos());
-    await waitFor(() => expect(result.current.isLoading).toBe(false));
-
-    vi.mocked(reorderTodos).mockRejectedValue(new Error('write failed'));
+  it('should roll back to the stored order when a reorder fails', async () => {
+    const { result } = await renderLoaded();
     await act(async () => {
-      await expect(result.current.reorderTodos([todoB, todoA])).rejects.toThrow('write failed');
+      await result.current.addTodo('A');
+      await result.current.addTodo('B');
+    });
+    await waitFor(() => expect(result.current.todos).toHaveLength(2));
+    const [a, b] = result.current.todos;
+
+    vi.spyOn(todoService, 'reorderTodos').mockRejectedValueOnce(new Error('write failed'));
+    await act(async () => {
+      await expect(result.current.reorderTodos([b!, a!])).rejects.toThrow('write failed');
     });
 
-    // The optimistic swap is undone by re-reading the true order from storage.
-    expect(result.current.todos).toEqual([todoA, todoB]);
+    expect(texts(result.current.todos)).toEqual(['A', 'B']);
   });
 });

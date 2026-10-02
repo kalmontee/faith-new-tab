@@ -1,21 +1,9 @@
 import { db } from '@/shared/storage/app-db';
+import { createDailyEntry } from '@/shared/lib/daily-entry';
 import type { GratitudeEntry } from '@/shared/types/table';
-import { getTodayKey } from '@/shared/utils/date';
 
-export async function getTodayGratitude(): Promise<GratitudeEntry | undefined> {
-  return db.gratitude.where('date').equals(getTodayKey()).first();
-}
+const gratitudeEntries = createDailyEntry(db.gratitude);
 
-export async function saveGratitude(entry: string): Promise<GratitudeEntry> {
-  const date = getTodayKey();
-  const existing = await db.gratitude.where('date').equals(date).first();
-  const now = Date.now();
+export const getTodayGratitude = (): Promise<GratitudeEntry | undefined> => gratitudeEntries.getToday();
 
-  if (existing) {
-    await db.gratitude.update(existing.id, { entry, updatedAt: now });
-    return { ...existing, entry, updatedAt: now };
-  }
-
-  const id = await db.gratitude.add({ date, entry, updatedAt: now } as GratitudeEntry);
-  return { id: id as number, date, entry, updatedAt: now };
-}
+export const saveGratitude = (entry: string): Promise<GratitudeEntry> => gratitudeEntries.saveToday({ entry });
