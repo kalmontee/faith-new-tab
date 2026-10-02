@@ -7,14 +7,14 @@ export default function ClockGreeting() {
 
   return (
     <div className="flex flex-col items-center gap-1 text-center">
-      <p className="text-xl font-normal text-white">{greeting} 👋</p>
+      <p className="text-xl font-normal text-white/90">{greeting}</p>
 
-      <div className="flex items-start leading-none">
-        <span className="text-[80px] font-light tracking-tight text-white">{time}</span>
-        <span className="ml-2 mt-4 text-2xl font-light text-white/70 self-end">{period}</span>
+      <div className="flex items-baseline leading-none [text-shadow:0_2px_24px_rgba(0,0,0,0.25)]">
+        <span className="text-[88px] font-light tabular-nums tracking-tight text-white">{time}</span>
+        <span className="ml-2 text-2xl font-light text-ink-secondary">{period}</span>
       </div>
 
-      <p className="text-sm text-white/60">{date}</p>
+      <p className="text-sm text-ink-secondary">{date}</p>
     </div>
   );
 }

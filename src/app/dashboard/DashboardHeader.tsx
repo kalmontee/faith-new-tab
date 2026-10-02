@@ -26,10 +26,9 @@ function HeaderIconButton({
       onClick={onClick}
       aria-label={label}
       className={cn(
-        'flex items-center justify-center h-8 w-8 rounded-full',
-        'text-white/50 hover:text-white transition-colors duration-150',
-        'hover:bg-white/8 focus-visible:outline-none focus-visible:ring-2',
-        'focus-visible:ring-[#d4a547] focus-visible:ring-offset-transparent',
+        'flex items-center justify-center h-9 w-9 rounded-full',
+        'text-ink-secondary hover:text-white transition-colors duration-150',
+        'hover:bg-white/10',
         className
       )}>
       {children}
@@ -46,15 +45,15 @@ export function DashboardHeader({ onSettingsClick }: DashboardHeaderProps) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="flex items-center justify-around px-10 py-6 mb-2 w-full shrink-0">
+      className="mx-auto flex w-full max-w-[1200px] shrink-0 items-center justify-between px-8 pt-6 pb-2">
       {/* App identity */}
       <div className="flex items-center gap-2.5">
-        <Sprout size={20} className="text-[#d4a547]" aria-hidden />
-        <span className="text-sm font-medium text-white/55 tracking-wide select-none">New Day. God&apos;s Plan. Better You.</span>
+        <Sprout size={20} className="text-gold" aria-hidden />
+        <span className="text-sm font-medium text-ink-secondary tracking-wide select-none">New Day. God&apos;s Plan. Better You.</span>
       </div>
 
       {/* Action buttons */}
-      <div className="flex items-center gap-2.5">
+      <div className="flex items-center gap-1">
         <HeaderIconButton label="Open settings" onClick={onSettingsClick}>
           <Settings size={20} />
         </HeaderIconButton>

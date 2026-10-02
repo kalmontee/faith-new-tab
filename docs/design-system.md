@@ -39,7 +39,11 @@ color: #ffffff;
 - No solid backgrounds. Every card is see-through.
 - Subtle white inner border for depth against the background.
 - Consistent border-radius across all cards (16px).
-- Cards do not have drop shadows — the blur effect provides depth.
+- Cards add a faint top-lit gradient, an inset top highlight and a soft ambient shadow (`0 10px 30px -12px rgba(0,0,0,.35)`) so they separate from light backgrounds. The `featured` card (verse) gets a gold-tinted border and radial glow.
+- Section header icons sit in a 24px tinted chip, colour-coded per module via `CardHeader`'s `tone` prop.
+- Text tokens: `ink-secondary` (72%), `ink-tertiary` (58%), `ink-placeholder` (50%) — all ≥4.5:1 on the card fill. Never use white/20–40 for readable text.
+- Keyboard focus: a global 2px gold outline on buttons; inputs use their own underline.
+- No emoji as icons — use lucide SVGs.
 
 ---
 

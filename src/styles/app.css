@@ -5,6 +5,12 @@
   --color-gold: #d4a547;
   --color-green-accent: #6bbf7b;
   --color-warm-amber: #e8b84b;
+  --color-rose-accent: #f08a9b;
+  --color-sky-accent: #7cc4e8;
+
+  --color-ink-secondary: rgb(255 255 255 / 0.72);
+  --color-ink-tertiary: rgb(255 255 255 / 0.58);
+  --color-ink-placeholder: rgb(255 255 255 / 0.5);
 
   --font-sans: Inter, system-ui, sans-serif;
   --font-serif: Lora, Georgia, serif;
@@ -73,6 +79,19 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+input:focus-visible,
+textarea:focus-visible {
+  outline: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

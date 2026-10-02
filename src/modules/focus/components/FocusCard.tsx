@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Pencil, Sparkle } from 'lucide-react';
+import { Leaf, Pencil, Sparkle } from 'lucide-react';
 
 import { Card, CardHeader } from '@/shared/ui/card';
 import { cn } from '@/shared/lib/utils';
@@ -32,7 +32,7 @@ const DAILY_LINES = [
   'He makes all things new.',
 ];
 
-const inputClass = cn('w-full bg-transparent focus:outline-none', 'placeholder:text-white/20 caret-[#d4a547]');
+const inputClass = cn('w-full bg-transparent focus:outline-none', 'placeholder:text-ink-placeholder caret-[#d4a547]');
 
 export default function FocusCard() {
   const { entry, isLoading, save } = useTodayFocus();
@@ -64,7 +64,7 @@ export default function FocusCard() {
 
   return (
     <Card>
-      <CardHeader icon={<Sparkle size={15} className="text-white/50 shrink-0" />} label="Today's Focus" />
+      <CardHeader icon={<Sparkle size={14} />} label="Today's Focus" tone="gold" />
 
       {isLoading && <FocusSkeleton />}
 
@@ -74,12 +74,15 @@ export default function FocusCard() {
             <>
               <div className="flex items-start justify-between gap-2">
                 <p className="text-base font-semibold text-white leading-snug">{entry.focus}</p>
-                <Pencil size={13} className="mt-0.5 shrink-0 text-white/0 group-hover:text-white/30 transition-colors" />
+                <Pencil size={13} className="mt-0.5 shrink-0 text-white/0 group-hover:text-white/60 transition-colors" />
               </div>
-              {entry.tagline && <p className="text-xs text-white/50">{entry.tagline}</p>}
+              {entry.tagline && <p className="text-xs text-ink-secondary">{entry.tagline}</p>}
             </>
           ) : (
-            <p className="text-sm text-white/30 italic">Set your focus for today...</p>
+            <span className="flex items-center gap-2 rounded-lg border border-dashed border-white/20 px-3 py-2.5 text-sm text-ink-secondary transition-colors group-hover:border-gold/50 group-hover:text-white">
+              <Pencil size={13} aria-hidden className="shrink-0" />
+              Set your focus for today
+            </span>
           )}
         </button>
       )}
@@ -121,14 +124,14 @@ export default function FocusCard() {
             maxLength={80}
             className={cn(inputClass, 'text-xs text-white/60 border-b border-white/8 pb-1')}
           />
-          <p className="text-[10px] text-white/20 pt-0.5">Enter to save · Esc to cancel</p>
+          <p className="text-[11px] text-ink-tertiary pt-0.5">Enter to save · Esc to cancel</p>
         </div>
       )}
 
       {/* Daily one-liner */}
-      <div className="mt-auto pt-2 border-t border-white/15">
-        <p className="text-[13px] font-medium text-[#6bbf7b]">
-          <span aria-hidden>🌿 </span>
+      <div className="mt-auto border-t border-white/10 pt-3">
+        <p className="flex items-center gap-2 text-[13px] font-medium text-green-accent">
+          <Leaf size={14} aria-hidden className="shrink-0" />
           {dailyLine}
         </p>
       </div>
