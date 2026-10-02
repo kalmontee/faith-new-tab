@@ -1,6 +1,7 @@
 import { createCachedResource } from '@/shared/lib/cached-resource';
 import { fetchWeather } from '../api/weather-api';
-import type { CachedWeatherEntry, TemperatureUnit, WeatherData } from '../types';
+import type { TemperatureUnit } from '@/shared/types/temperature';
+import type { CachedWeatherEntry, WeatherData } from '../types';
 
 interface WeatherQuery {
   lat: number;

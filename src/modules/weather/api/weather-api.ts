@@ -1,4 +1,5 @@
-import type { TemperatureUnit, WeatherData } from '../types';
+import type { TemperatureUnit } from '@/shared/types/temperature';
+import type { WeatherData } from '../types';
 import { NominatimSchema, OpenMeteoSchema, WMO_DESCRIPTIONS } from '../utils';
 
 const WEATHER_API_BASE_URL: string = import.meta.env.VITE_WEATHER_API_BASE_URL;

@@ -17,5 +17,12 @@ export default tseslint.config(
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
     },
+  },
+  {
+    files: ['src/shared/**/*.{ts,tsx}'],
+    ignores: ['src/shared/lib/module-registry.ts', 'src/**/*.test.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': ['error', { patterns: [{ group: ['@/modules/*', '@/modules/**'], message: 'shared/ must not depend on modules/. Move the shared type or logic into shared/.' }] }],
+    },
   }
 );

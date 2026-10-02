@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { zustandChromeStorage } from '@/shared/storage';
-import type { TemperatureUnit } from '@/modules/weather/types';
+import type { TemperatureUnit } from '@/shared/types/temperature';
 import type { BackgroundId } from '@/shared/types/background-presets';
 
 interface SettingsState {

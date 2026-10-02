@@ -6,8 +6,8 @@ interface CurrentVerseState {
   setCurrentVerse: (verse: CurrentVerse) => void;
 }
 
-// Ambient, unpersisted — lets modules that need "the verse on screen right now"
-// (e.g. quick-actions' Share/Copy/Favorite) read it without importing the bible module.
+// Ordering: `verse` stays null until the bible module publishes one (cache or network),
+// so readers must treat null as "not ready" and disable their verse actions.
 export const useCurrentVerseStore = create<CurrentVerseState>((set) => ({
   verse: null,
   setCurrentVerse: (verse) => set({ verse }),
