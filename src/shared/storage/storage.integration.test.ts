@@ -29,7 +29,7 @@ describe('StorageIntegration', () => {
       vi.mocked(chrome.storage.local.set).mockRejectedValueOnce(new Error('quota'));
 
       await expect(storage.set('k', 'v')).resolves.toBeUndefined();
-  });
+    });
   });
 
   describe('storage without chrome', () => {

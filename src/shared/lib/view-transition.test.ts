@@ -40,10 +40,7 @@ describe('withViewTransition', () => {
       return { finished: Promise.resolve() };
     });
     mutableDoc.startViewTransition = startViewTransition;
-    vi.stubGlobal(
-      'matchMedia',
-      vi.fn().mockReturnValue({ matches: true })
-    );
+    vi.stubGlobal('matchMedia', vi.fn().mockReturnValue({ matches: true }));
 
     const update = vi.fn();
     withViewTransition(update);
