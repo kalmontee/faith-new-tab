@@ -63,10 +63,7 @@ export const CardHeader = ({ icon, label, tone = 'gold', className }: CardHeader
 export const CardAction = ({ children, onClick, className }: CardActionProps) => (
   <button
     onClick={onClick}
-    className={cn(
-      'flex items-center gap-1.5 text-[13px] font-medium text-green-accent transition-colors hover:text-[#84cf91]',
-      className
-    )}
+    className={cn('flex items-center gap-1.5 text-[13px] font-medium text-green-accent transition-colors hover:text-[#84cf91]', className)}
   >
     {children}
   </button>
