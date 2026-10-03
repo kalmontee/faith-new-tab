@@ -1,14 +1,19 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import SettingsPage from '@/app/settings/SettingsPage';
 import { DashboardBackground } from '@/app/dashboard/DashboardBackground';
 import '@/styles/app.css';
 
+const queryClient = new QueryClient({ defaultOptions: { queries: { refetchOnWindowFocus: false } } });
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <DashboardBackground>
-      <SettingsPage onBack={() => window.history.back()} />
-    </DashboardBackground>
+    <QueryClientProvider client={queryClient}>
+      <DashboardBackground>
+        <SettingsPage onBack={() => window.history.back()} />
+      </DashboardBackground>
+    </QueryClientProvider>
   </React.StrictMode>
 );

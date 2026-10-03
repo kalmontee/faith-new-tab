@@ -15,4 +15,5 @@ export interface CachedWeatherEntry {
   cachedAt: number;
   lat: number;
   lng: number;
+  cityName?: string;
 }

@@ -28,11 +28,13 @@ function initialGeoState(): GeoState {
   return { coords: null, error: null, loading: true };
 }
 
-function useGeolocation(): GeoState {
+const MANUAL_GEO_STATE: GeoState = { coords: null, error: null, loading: false };
+
+function useGeolocation(enabled: boolean): GeoState {
   const [state, setState] = useState<GeoState>(initialGeoState);
 
   useEffect(() => {
-    if (!navigator.geolocation) return; // already reflected in initial state
+    if (!enabled || !navigator.geolocation) return; // unsupported is already reflected in initial state
 
     navigator.geolocation.getCurrentPosition(
       ({ coords: { latitude, longitude } }) => {
@@ -47,27 +49,33 @@ function useGeolocation(): GeoState {
       },
       { timeout: 10_000 }
     );
-  }, []);
+  }, [enabled]);
 
-  return state;
+  return enabled ? state : MANUAL_GEO_STATE;
 }
 
 export function useWeather(): UseWeatherResult {
-  const { coords, error: geoError, loading: geoLoading } = useGeolocation();
+  const manualLocation = useSettingsStore((s) => s.manualLocation);
   const temperatureUnit = useSettingsStore((s) => s.temperatureUnit);
+  const isHydrated = useSettingsStore.persist.hasHydrated ? useSettingsStore.persist.hasHydrated() : true;
+  const geo = useGeolocation(!manualLocation && isHydrated);
+  const coords = manualLocation ?? geo.coords;
 
   const query = useQuery<WeatherData>({
-    queryKey: ['weather', coords?.lat, coords?.lng, temperatureUnit],
-    queryFn: () => getWeatherData(coords!.lat, coords!.lng, temperatureUnit),
+    queryKey: ['weather', coords?.lat, coords?.lng, temperatureUnit, manualLocation?.name],
+    queryFn: () =>
+      manualLocation
+        ? getWeatherData(manualLocation.lat, manualLocation.lng, temperatureUnit, manualLocation.name)
+        : getWeatherData(geo.coords!.lat, geo.coords!.lng, temperatureUnit),
     enabled: !!coords,
     retry: 2,
   });
 
   return {
     data: query.data,
-    isLoading: geoLoading || (!!coords && query.isLoading),
+    isLoading: geo.loading || (!!coords && query.isLoading),
     isError: query.isError,
-    geoError,
+    geoError: geo.error,
     refetch: query.refetch,
   };
 }

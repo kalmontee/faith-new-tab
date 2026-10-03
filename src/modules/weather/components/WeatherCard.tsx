@@ -2,12 +2,14 @@ import { createElement } from 'react';
 
 import { ArrowDown, ArrowUp, MapPin } from 'lucide-react';
 import { Card } from '@/shared/ui/card';
+import { useViewStore } from '@/shared/store/view-store';
 import { useWeather } from '../hooks/use-weather';
 import { WeatherSkeleton } from './Skeleton';
 import { getConditionIcon } from '../utils';
 
 export default function WeatherCard() {
   const { data, isLoading, isError, geoError } = useWeather();
+  const openSettings = useViewStore((s) => s.openSettings);
 
   const unitLabel = data?.unit === 'celsius' ? '°' : '°';
 
@@ -18,7 +20,10 @@ export default function WeatherCard() {
       {geoError && !isLoading && (
         <div className="space-y-1 text-sm text-ink-secondary">
           <p>{geoError}</p>
-          <p className="text-xs text-ink-tertiary">Enable location access and refresh the page.</p>
+          <p className="text-xs text-ink-tertiary">Enable location access and refresh the page, or</p>
+          <button onClick={openSettings} className="text-xs font-medium text-gold transition-colors hover:text-warm-amber">
+            Choose a city in Settings
+          </button>
         </div>
       )}
 

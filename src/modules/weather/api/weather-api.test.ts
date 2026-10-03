@@ -117,6 +117,14 @@ describe('fetchWeather', () => {
     await expect(fetchWeather(LAT, LNG, 'fahrenheit')).rejects.toThrow('Open-Meteo error: 503');
   });
 
+  it('uses the provided city name and skips reverse geocoding', async () => {
+    setupFetch({ city: 'Brooklyn' });
+    const result = await fetchWeather(LAT, LNG, 'fahrenheit', 'Lagos');
+    expect(result.city).toBe('Lagos');
+    const urls = vi.mocked(fetch).mock.calls.map(([url]) => String(url));
+    expect(urls.some((url) => url.includes('/reverse'))).toBe(false);
+  });
+
   it('falls back to "Your Location" when Nominatim request fails', async () => {
     setupFetch({ nominatimFails: true });
     const result = await fetchWeather(LAT, LNG, 'fahrenheit');

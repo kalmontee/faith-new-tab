@@ -55,6 +55,20 @@ export const NominatimSchema = z.object({
     .optional(),
 });
 
+export const GeocodingSchema = z.object({
+  results: z
+    .array(
+      z.object({
+        name: z.string(),
+        admin1: z.string().optional(),
+        country: z.string().optional(),
+        latitude: z.number(),
+        longitude: z.number(),
+      })
+    )
+    .optional(),
+});
+
 export function getConditionIcon(code: number): LucideIcon {
   if (code === 0) return Sun;
   if (code <= 2) return CloudSun;
