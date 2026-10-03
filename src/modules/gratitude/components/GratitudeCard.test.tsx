@@ -11,9 +11,7 @@ vi.mock('../hooks/use-today-gratitude', () => ({
 import { useTodayGratitude } from '../hooks/use-today-gratitude';
 
 function mockGratitude(entryText: string | null) {
-  const entry: GratitudeEntry | null = entryText
-    ? { id: 1, date: '2025-01-01', entry: entryText, updatedAt: 1 }
-    : null;
+  const entry: GratitudeEntry | null = entryText ? { id: 1, date: '2025-01-01', entry: entryText, updatedAt: 1 } : null;
   vi.mocked(useTodayGratitude).mockReturnValue({ entry, isLoading: false, save: vi.fn() });
 }
 

@@ -41,13 +41,15 @@ export default function TodoCard() {
       <div className="mt-3 min-h-0 flex-1 overflow-y-auto">
         {isLoading && <TodoSkeleton />}
 
-        {!isLoading && todos.length === 0 && !isAdding && <button
+        {!isLoading && todos.length === 0 && !isAdding && (
+          <button
             onClick={() => setIsAdding(true)}
             className="flex w-full items-center gap-2 rounded-lg border border-dashed border-white/20 px-3 py-2.5 text-left text-sm text-ink-secondary transition-colors hover:border-green-accent/50 hover:text-white"
           >
             <Plus size={14} aria-hidden className="shrink-0" />
             Add your first task
-          </button>}
+          </button>
+        )}
 
         {!isLoading && todos.length > 0 && (
           <Reorder.Group axis="y" values={todos} onReorder={(next) => void reorderTodos(next).catch(() => {})} className="space-y-2.5">

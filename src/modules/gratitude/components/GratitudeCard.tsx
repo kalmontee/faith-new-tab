@@ -41,7 +41,8 @@ export default function GratitudeCard() {
           <button
             onClick={startEditing}
             className="w-full text-left"
-            aria-label={entry?.entry ? "Edit today's gratitude" : "Add today's gratitude"}>
+            aria-label={entry?.entry ? "Edit today's gratitude" : "Add today's gratitude"}
+          >
             {entry?.entry ? (
               <p className="text-sm text-white/90 leading-relaxed whitespace-pre-wrap">{entry.entry}</p>
             ) : (
@@ -70,7 +71,8 @@ export default function GratitudeCard() {
             if (!e.currentTarget.contains(e.relatedTarget as Node)) {
               handleSave();
             }
-          }}>
+          }}
+        >
           <textarea
             ref={textareaRef}
             value={draft}
