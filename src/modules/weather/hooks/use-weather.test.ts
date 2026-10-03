@@ -96,6 +96,25 @@ describe('useWeather', () => {
     expect(navigator.geolocation.getCurrentPosition).not.toHaveBeenCalled();
   });
 
+  it('should wait for persisted settings hydration before asking for geolocation', async () => {
+    grantGeolocation();
+    const persist = useSettingsStore.persist;
+    const originalHasHydrated = persist.hasHydrated;
+    persist.hasHydrated = () => false;
+
+    const { result } = renderHook(() => useWeather(), { wrapper: createQueryWrapper() });
+
+    expect(result.current.isLoading).toBe(false);
+    expect(navigator.geolocation.getCurrentPosition).not.toHaveBeenCalled();
+
+    persist.hasHydrated = () => true;
+    useSettingsStore.setState({ manualLocation: LAGOS });
+
+    await waitFor(() => expect(result.current.data).toEqual(weather));
+    expect(getWeatherData).toHaveBeenCalledWith(LAGOS.lat, LAGOS.lng, 'fahrenheit', LAGOS.name);
+    persist.hasHydrated = originalHasHydrated;
+  });
+
   it('should not report a geo error in manual mode even when geolocation is unsupported', async () => {
     Object.defineProperty(navigator, 'geolocation', { value: undefined, configurable: true });
     useSettingsStore.setState({ manualLocation: LAGOS });

@@ -57,7 +57,8 @@ function useGeolocation(enabled: boolean): GeoState {
 export function useWeather(): UseWeatherResult {
   const manualLocation = useSettingsStore((s) => s.manualLocation);
   const temperatureUnit = useSettingsStore((s) => s.temperatureUnit);
-  const geo = useGeolocation(!manualLocation);
+  const isHydrated = useSettingsStore.persist.hasHydrated ? useSettingsStore.persist.hasHydrated() : true;
+  const geo = useGeolocation(!manualLocation && isHydrated);
   const coords = manualLocation ?? geo.coords;
 
   const query = useQuery<WeatherData>({
