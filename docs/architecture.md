@@ -1,6 +1,6 @@
 # Architecture
 
-New Day is a **client-side, offline-first system** — there is no owned backend. That reframes the usual scaling questions: there is no throughput to shard, no replicas to manage. The real constraints are **per-tab startup latency, bundle size, storage quota, and cache freshness.** A New Tab is opened dozens of times a day, so the effective latency budget for first paint is *zero* — it must come from cache, every time. Every design decision below serves that.
+New Day is a **client-side, offline-first system** — there is no owned backend. That reframes the usual scaling questions: there is no throughput to shard, no replicas to manage. The real constraints are **per-tab startup latency, bundle size, storage quota, and cache freshness.** A New Tab is opened dozens of times a day, so the effective latency budget for first paint is _zero_ — it must come from cache, every time. Every design decision below serves that.
 
 ---
 
@@ -29,13 +29,13 @@ New Day is a **client-side, offline-first system** — there is no owned backend
 
 The scaling problem is not throughput — it's **startup latency and bundle discipline per tab.**
 
-| Dimension            | Estimate                        | Implication                                                        |
+| Dimension            | Estimate                        | Implication                                                       |
 | -------------------- | ------------------------------- | ----------------------------------------------------------------- |
 | New-tab opens        | ~30–100 / user / day            | Each open is a cold React mount → first paint served from cache   |
 | External API calls   | 1 verse / 24h + weather / 30min | `dateKey` cache means OurManna is hit at most once per active day |
 | Local data volume    | Dozens of rows, KB-scale        | Fits IndexedDB comfortably; no pagination, sharding, or eviction  |
 | chrome.storage quota | ~5–10 MB                        | Settings + verse cache are tiny (<50 KB)                          |
-| Critical bundle      | newtab entry + shell only       | Modules & Settings are `React.lazy`, pulled on demand            |
+| Critical bundle      | newtab entry + shell only       | Modules & Settings are `React.lazy`, pulled on demand             |
 
 ---
 
@@ -374,14 +374,14 @@ Each module is wrapped in its own error boundary. If the weather API is down, th
 
 ## Tradeoffs
 
-| Decision                          | Buys                                   | Costs                                          |
-| --------------------------------- | -------------------------------------- | ---------------------------------------------- |
-| No backend, all on-device         | Privacy, zero infra, instant reads     | No cross-device sync; no server analytics      |
-| Two storage backends (KV + Dexie) | Right tool per data shape              | Two mental models; migrations only Dexie-side  |
+| Decision                          | Buys                                    | Costs                                                                           |
+| --------------------------------- | --------------------------------------- | ------------------------------------------------------------------------------- |
+| No backend, all on-device         | Privacy, zero infra, instant reads      | No cross-device sync; no server analytics                                       |
+| Two storage backends (KV + Dexie) | Right tool per data shape               | Two mental models; migrations only Dexie-side                                   |
 | Dexie `liveQuery` hooks           | No manual re-reads; cross-tab freshness | Hooks depend on Dexie; saves show via optimistic override until the query emits |
-| Static import registry            | Simple, type-safe, tree-shakeable      | A registry edit per module (no runtime plugins) |
-| Lazy modules + prefetch Settings  | Tiny critical bundle, fast first paint | Prefetch / Suspense orchestration complexity   |
-| Feature flags from bundled YAML   | Simple, no flag service                | Flags fixed at build time — no runtime rollout |
+| Static import registry            | Simple, type-safe, tree-shakeable       | A registry edit per module (no runtime plugins)                                 |
+| Lazy modules + prefetch Settings  | Tiny critical bundle, fast first paint  | Prefetch / Suspense orchestration complexity                                    |
+| Feature flags from bundled YAML   | Simple, no flag service                 | Flags fixed at build time — no runtime rollout                                  |
 
 ---
 

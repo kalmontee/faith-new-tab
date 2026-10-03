@@ -6,8 +6,8 @@ function memoryStorage(): StorageService & { data: Map<string, unknown> } {
   const data = new Map<string, unknown>();
   return {
     data,
-    get: async <T,>(key: string) => (data.has(key) ? (data.get(key) as T) : null),
-    set: async <T,>(key: string, value: T) => void data.set(key, value),
+    get: async <T>(key: string) => (data.has(key) ? (data.get(key) as T) : null),
+    set: async <T>(key: string, value: T) => void data.set(key, value),
     remove: async (key) => void data.delete(key),
     clear: async () => data.clear(),
   };

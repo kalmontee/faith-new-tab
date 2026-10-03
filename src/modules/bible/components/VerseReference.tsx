@@ -10,11 +10,11 @@ interface VerseReferenceProps {
 export function VerseReference({ reference, translation }: VerseReferenceProps) {
   return (
     <div className="flex flex-col items-center gap-3">
-      <hr className="w-16 border-white/15" />
+      <hr className="w-16 border-gold/30" />
 
       <div className="flex flex-col items-center gap-0.5">
-        <span className="text-sm font-medium text-[#d4a547]">{reference}</span>
-        <span className="text-[11px] uppercase tracking-widest text-white/40">{translation}</span>
+        <span className="text-sm font-medium text-gold">{reference}</span>
+        <span className="text-[11px] uppercase tracking-widest text-ink-tertiary">{translation}</span>
       </div>
 
       {/* <button

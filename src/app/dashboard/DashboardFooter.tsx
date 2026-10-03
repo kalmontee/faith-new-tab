@@ -12,7 +12,7 @@ function FooterIconButton({ label, children }: { label: string; children: React.
       disabled
       aria-label={`${label} — coming soon`}
       title="Coming soon"
-      className="flex h-8 w-8 items-center justify-center rounded-full text-white/40 cursor-not-allowed hover:text-white/50 transition-colors"
+      className="flex h-8 w-8 items-center justify-center rounded-full text-ink-tertiary cursor-not-allowed transition-colors"
     >
       {children}
     </button>
@@ -28,12 +28,12 @@ export function DashboardFooter() {
       animate={{ opacity: 1 }}
       transition={{ delay: 0.9, duration: 0.4 }}
       style={{ gridArea: 'footer' }}
-      className="flex items-center justify-between gap-4 border-t border-white/8 px-1 pt-4 pb-2"
+      className="flex items-center justify-between gap-4 border-t border-white/15 px-1 pt-4 pb-2"
     >
       <div className="flex min-w-0 items-center gap-2">
-        <BookOpen size={15} className="shrink-0 text-white/40" aria-hidden />
-        <p className="truncate text-[13px] text-white/50">
-          <span className="italic">&ldquo;{verse.text}&rdquo;</span> <span className="text-[#d4a547]">{verse.reference}</span>
+        <BookOpen size={15} className="shrink-0 text-ink-secondary" aria-hidden />
+        <p className="truncate text-[13px] text-ink-secondary [text-shadow:0_1px_8px_rgba(0,0,0,0.3)]">
+          <span className="italic">&ldquo;{verse.text}&rdquo;</span> <span className="font-medium text-gold">{verse.reference}</span>
         </p>
       </div>
 

@@ -28,11 +28,11 @@ export default function TodoCard() {
   return (
     <Card>
       <div className="flex items-center justify-between">
-        <CardHeader icon={<ListTodo size={15} className="text-white/50 shrink-0" />} label="To-Do List" className="mb-0" />
+        <CardHeader icon={<ListTodo size={14} />} label="To-Do List" tone="green" className="mb-0" />
         <button
           onClick={() => setIsAdding(true)}
           aria-label="Add a to-do item"
-          className="flex h-6 w-6 items-center justify-center rounded-full text-white/50 hover:text-white hover:bg-white/8 transition-colors"
+          className="flex h-7 w-7 items-center justify-center rounded-full text-ink-secondary hover:text-white hover:bg-white/10 transition-colors"
         >
           <Plus size={15} />
         </button>
@@ -41,7 +41,15 @@ export default function TodoCard() {
       <div className="mt-3 min-h-0 flex-1 overflow-y-auto">
         {isLoading && <TodoSkeleton />}
 
-        {!isLoading && todos.length === 0 && !isAdding && <p className="text-sm text-white/30 italic">Nothing on your list yet.</p>}
+        {!isLoading && todos.length === 0 && !isAdding && (
+          <button
+            onClick={() => setIsAdding(true)}
+            className="flex w-full items-center gap-2 rounded-lg border border-dashed border-white/20 px-3 py-2.5 text-left text-sm text-ink-secondary transition-colors hover:border-green-accent/50 hover:text-white"
+          >
+            <Plus size={14} aria-hidden className="shrink-0" />
+            Add your first task
+          </button>
+        )}
 
         {!isLoading && todos.length > 0 && (
           <Reorder.Group axis="y" values={todos} onReorder={(next) => void reorderTodos(next).catch(() => {})} className="space-y-2.5">
@@ -75,7 +83,7 @@ export default function TodoCard() {
           maxLength={140}
           className={cn(
             'mt-3 w-full bg-transparent text-sm text-white/90 focus:outline-none',
-            'placeholder:text-white/20 caret-[#6bbf7b] border-b border-white/15 pb-1'
+            'placeholder:text-ink-placeholder caret-[#6bbf7b] border-b border-white/15 pb-1'
           )}
         />
       )}

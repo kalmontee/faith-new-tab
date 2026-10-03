@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, Fragment } from 'react';
 import { Heart, Plus } from 'lucide-react';
 
-import { Card, CardHeader } from '@/shared/ui/card';
+import { Card, CardAction, CardHeader } from '@/shared/ui/card';
 import { cn } from '@/shared/lib/utils';
 import { useTodayGratitude } from '../hooks/use-today-gratitude';
 import { GratitudeSkeleton } from './Skeleton';
@@ -32,7 +32,7 @@ export default function GratitudeCard() {
 
   return (
     <Card>
-      <CardHeader icon={<Heart size={15} className="text-white/50 shrink-0" />} label="Today's Gratitude" />
+      <CardHeader icon={<Heart size={14} />} label="Today's Gratitude" tone="rose" />
 
       {isLoading && <GratitudeSkeleton />}
 
@@ -41,17 +41,16 @@ export default function GratitudeCard() {
           <button
             onClick={startEditing}
             className="w-full text-left"
-            aria-label={entry?.entry ? "Edit today's gratitude" : "Add today's gratitude"}>
+            aria-label={entry?.entry ? "Edit today's gratitude" : "Add today's gratitude"}
+          >
             {entry?.entry ? (
               <p className="text-sm text-white/90 leading-relaxed whitespace-pre-wrap">{entry.entry}</p>
             ) : (
-              <p className="text-sm text-white/30 italic">What are you grateful for today?</p>
+              <p className="text-sm italic text-ink-placeholder">What are you grateful for today?</p>
             )}
           </button>
-          <div className="mt-auto pt-2 flex border-t border-white/15">
-            <button
-              onClick={startEditing}
-              className={cn('flex items-center gap-1.5 text-[13px] font-medium transition-colors', 'text-[#6bbf7b] hover:text-[#84cf91]')}>
+          <div className="mt-auto flex border-t border-white/10 pt-3">
+            <CardAction onClick={startEditing}>
               {entry?.entry ? (
                 'Edit'
               ) : (
@@ -60,7 +59,7 @@ export default function GratitudeCard() {
                   Add a Gratitude
                 </Fragment>
               )}
-            </button>
+            </CardAction>
           </div>
         </Fragment>
       )}
@@ -72,7 +71,8 @@ export default function GratitudeCard() {
             if (!e.currentTarget.contains(e.relatedTarget as Node)) {
               handleSave();
             }
-          }}>
+          }}
+        >
           <textarea
             ref={textareaRef}
             value={draft}
@@ -85,11 +85,11 @@ export default function GratitudeCard() {
             rows={3}
             className={cn(
               'w-full resize-none bg-transparent focus:outline-none',
-              'text-sm text-white/90 leading-relaxed placeholder:text-white/20 caret-[#d4a547]',
+              'text-sm text-white/90 leading-relaxed placeholder:text-ink-placeholder caret-[#d4a547]',
               'border-b border-white/15 pb-1'
             )}
           />
-          <p className="text-[10px] text-white/20 pt-1.5">Click away to save · Esc to cancel</p>
+          <p className="text-[11px] text-ink-tertiary pt-1.5">Click away to save · Esc to cancel</p>
         </div>
       )}
     </Card>

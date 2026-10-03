@@ -28,14 +28,7 @@ export function ModuleRenderer() {
   return (
     <Fragment>
       {modules.map((mod, index) => (
-        <m.div
-          key={mod.id}
-          style={{ gridArea: mod.gridArea }}
-          custom={index}
-          initial="hidden"
-          animate="visible"
-          variants={cardVariants}
-        >
+        <m.div key={mod.id} style={{ gridArea: mod.gridArea }} custom={index} initial="hidden" animate="visible" variants={cardVariants}>
           <Suspense fallback={<ModuleSkeleton />}>
             <mod.component />
           </Suspense>

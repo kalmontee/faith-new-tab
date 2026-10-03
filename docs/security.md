@@ -14,15 +14,15 @@ The `frontend-security` skill's default checklist (CSP headers via server middle
 
 ## Findings
 
-| #   | Issue                                                                                  | Severity | Status             |
-| --- | -------------------------------------------------------------------------------------- | -------- | ------------------ |
-| 1   | `http://localhost:3000/*` host permission ships in the production build                | Medium   | ✅ Fixed           |
-| 2   | `alarms` and `notifications` permissions declared but unused                           | Low      | ✅ Fixed           |
-| 3   | `VITE_WEATHER_API_KEY` name implies a secret; it actually holds a full URL             | Low      | ✅ Fixed           |
-| 4   | Build-toolchain deps (`js-yaml`, `nanoid`) have known high-severity advisories         | Medium   | ✅ Fixed           |
-| 5   | No `dangerouslySetInnerHTML`, `.innerHTML`, or `eval` anywhere in `src/`               | —        | Pass               |
-| 6   | Both external APIs (OurManna, Open-Meteo, Nominatim) are validated with Zod before use | —        | Pass               |
-| 7   | MV3 default CSP (`script-src 'self'; object-src 'self'`) is untouched                  | —        | Pass               |
+| #   | Issue                                                                                  | Severity | Status   |
+| --- | -------------------------------------------------------------------------------------- | -------- | -------- |
+| 1   | `http://localhost:3000/*` host permission ships in the production build                | Medium   | ✅ Fixed |
+| 2   | `alarms` and `notifications` permissions declared but unused                           | Low      | ✅ Fixed |
+| 3   | `VITE_WEATHER_API_KEY` name implies a secret; it actually holds a full URL             | Low      | ✅ Fixed |
+| 4   | Build-toolchain deps (`js-yaml`, `nanoid`) have known high-severity advisories         | Medium   | ✅ Fixed |
+| 5   | No `dangerouslySetInnerHTML`, `.innerHTML`, or `eval` anywhere in `src/`               | —        | Pass     |
+| 6   | Both external APIs (OurManna, Open-Meteo, Nominatim) are validated with Zod before use | —        | Pass     |
+| 7   | MV3 default CSP (`script-src 'self'; object-src 'self'`) is untouched                  | —        | Pass     |
 
 ### 1. Stale dev host permission ships to production — Medium
 

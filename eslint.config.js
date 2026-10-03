@@ -22,7 +22,17 @@ export default tseslint.config(
     files: ['src/shared/**/*.{ts,tsx}'],
     ignores: ['src/shared/lib/module-registry.ts', 'src/**/*.test.{ts,tsx}'],
     rules: {
-      'no-restricted-imports': ['error', { patterns: [{ group: ['@/modules/*', '@/modules/**'], message: 'shared/ must not depend on modules/. Move the shared type or logic into shared/.' }] }],
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@/modules/*', '@/modules/**'],
+              message: 'shared/ must not depend on modules/. Move the shared type or logic into shared/.',
+            },
+          ],
+        },
+      ],
     },
   }
 );

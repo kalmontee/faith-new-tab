@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
-import { Church, Plus } from 'lucide-react';
+import { HandHeart, Plus } from 'lucide-react';
 
 import { cn } from '@/shared/lib/utils';
-import { Card, CardHeader } from '@/shared/ui/card';
+import { Card, CardAction, CardHeader } from '@/shared/ui/card';
 import { usePrayers } from '../hooks/use-prayers';
 import { PrayerSkeleton } from './Skeleton';
 import { PrayerRow } from './PrayerRow';
@@ -26,12 +26,12 @@ export default function PrayerCard() {
 
   return (
     <Card>
-      <CardHeader icon={<Church size={15} className="text-white/50 shrink-0" />} label="Prayer Requests" />
+      <CardHeader icon={<HandHeart size={14} />} label="Prayer Requests" tone="rose" />
 
       <div className="min-h-0 flex-1 overflow-y-auto">
         {isLoading && <PrayerSkeleton />}
 
-        {!isLoading && prayers.length === 0 && !isAdding && <p className="text-sm text-white/30 italic">No prayer requests yet.</p>}
+        {!isLoading && prayers.length === 0 && !isAdding && <p className="text-sm italic text-ink-placeholder">No prayer requests yet.</p>}
 
         {!isLoading && prayers.length > 0 && (
           <ul className="space-y-2.5">
@@ -64,22 +64,16 @@ export default function PrayerCard() {
           maxLength={140}
           className={cn(
             'mt-3 w-full bg-transparent text-sm text-white/90 focus:outline-none',
-            'placeholder:text-white/20 caret-[#6bbf7b] border-b border-white/15 pb-1'
+            'placeholder:text-ink-placeholder caret-[#6bbf7b] border-b border-white/15 pb-1'
           )}
         />
       )}
 
       {!isLoading && !isAdding && (
-        <button
-          onClick={() => setIsAdding(true)}
-          className={cn(
-            'border-t border-white/15 mt-3 pt-2 flex items-center gap-1.5 text-[13px] font-medium transition-colors',
-            'text-[#6bbf7b] hover:text-[#84cf91]'
-          )}
-        >
+        <CardAction onClick={() => setIsAdding(true)} className="mt-3 border-t border-white/10 pt-3">
           <Plus size={14} />
           Add a Request
-        </button>
+        </CardAction>
       )}
     </Card>
   );

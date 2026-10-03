@@ -17,7 +17,7 @@ export default function QuickActionsCard() {
 
   return (
     <Card>
-      <CardHeader icon={<Zap size={15} className="text-white/50 shrink-0" />} label="Quick Actions" />
+      <CardHeader icon={<Zap size={14} />} label="Quick Actions" tone="amber" />
       <div className="mt-3 grid grid-cols-2 gap-2.5">
         <ActionTile icon={<Share2 size={18} />} label="Share Verse" onClick={shareVerse} disabled={!hasVerse} />
         <ActionTile icon={<Copy size={18} />} label={copyLabel} onClick={handleCopy} disabled={!hasVerse} />

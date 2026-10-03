@@ -4,5 +4,9 @@ import { useState } from 'react';
 export function useOptimisticOverride<T>(live: T): [T, (value: T) => void, () => void] {
   const [override, setOverride] = useState<{ base: T; value: T } | null>(null);
 
-  return [override && override.base === live ? override.value : live, (value) => setOverride({ base: live, value }), () => setOverride(null)];
+  return [
+    override && override.base === live ? override.value : live,
+    (value) => setOverride({ base: live, value }),
+    () => setOverride(null),
+  ];
 }

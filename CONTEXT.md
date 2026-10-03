@@ -12,6 +12,7 @@ Terms used in this codebase. Architecture vocabulary (module, interface, seam, a
 - **Current verse**: ambient, unpersisted store holding the verse on screen. Null until the bible module publishes one; readers disable verse actions while null.
 
 ## Decisions not taken
+
 - `dexie-react-hooks` for live queries: rejected in favor of the in-house hook (about 15 lines on `liveQuery`, no new dependency).
 - TanStack Query over Dexie: rejected; it keeps manual re-reads and has no cross-tab updates for IndexedDB.
 - Replacing the ambient current-verse store with an explicit interface: not done; one reader, one publisher, and modules cannot import each other.
