@@ -20,7 +20,7 @@ function mockSearch(search: ReturnType<typeof useLocationSearch>) {
 }
 
 function typeQuery(value: string) {
-  fireEvent.change(screen.getByRole('combobox', { name: /search for a city/i }), { target: { value } });
+  fireEvent.change(screen.getByRole('combobox', { name: /location/i }), { target: { value } });
 }
 
 beforeEach(() => {

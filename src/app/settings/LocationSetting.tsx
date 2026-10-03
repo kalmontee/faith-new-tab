@@ -94,7 +94,6 @@ export function LocationSetting() {
         <input
           id={`${baseId}-input`}
           role="combobox"
-          aria-label="Search for a city"
           aria-expanded={isListOpen}
           aria-controls={listboxId}
           aria-autocomplete="list"
