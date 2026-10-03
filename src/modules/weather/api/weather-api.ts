@@ -25,7 +25,7 @@ async function reverseGeocode(lat: number, lng: number): Promise<string> {
   }
 }
 
-export async function fetchWeather(lat: number, lng: number, unit: TemperatureUnit): Promise<WeatherData> {
+export async function fetchWeather(lat: number, lng: number, unit: TemperatureUnit, cityName?: string): Promise<WeatherData> {
   const url =
     `${WEATHER_API_BASE_URL}` +
     `?latitude=${lat}&longitude=${lng}` +
@@ -35,7 +35,7 @@ export async function fetchWeather(lat: number, lng: number, unit: TemperatureUn
     `&timezone=auto` +
     `&forecast_days=1`;
 
-  const [weatherRes, city] = await Promise.all([fetch(url), reverseGeocode(lat, lng)]);
+  const [weatherRes, city] = await Promise.all([fetch(url), cityName ?? reverseGeocode(lat, lng)]);
 
   if (!weatherRes.ok) throw new Error(`Open-Meteo error: ${weatherRes.status}`);
 

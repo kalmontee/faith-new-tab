@@ -56,8 +56,10 @@ interface ModuleDefinition {
 | Network     | Yes (weather API)                                                                                                               |
 | Storage     | Cached reading, location, unit preference                                                                                       |
 | Behavior    | Location pin + city name, large temperature number, condition icon (sun/cloud/rain), condition label ("Sunny"), high/low range. |
-| Settings    | Use current location toggle, temperature unit (°F / °C), refresh frequency                                                      |
-| Permissions | Geolocation API (requested on first use)                                                                                        |
+| Settings    | Location (browser location by default, or a city chosen via search), temperature unit (°F / °C)                                 |
+| Permissions | Geolocation API (requested on first use; never requested while a manual city is chosen)                                         |
+
+**Manual location.** Settings → Weather → Location searches cities through the Open-Meteo geocoding API (debounced, 2+ characters, 5 results). Picking a result stores `manualLocation` (`name`, `label`, `lat`, `lng`) in the settings store; `useWeather` then skips browser geolocation and the cache only reuses a reading for the same picked city. "Use my location" clears it. When browser location is denied, the card links to Settings.
 
 ### Today's Focus
 

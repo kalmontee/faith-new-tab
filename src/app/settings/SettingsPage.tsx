@@ -7,6 +7,7 @@ import { useSettingsStore } from '@/shared/store/settings-store';
 import { resolveModules } from '@/shared/lib/module-registry';
 import { BackgroundPicker } from './BackgroundPicker';
 import { UnitToggle } from './UnitToggle';
+import { LocationSetting } from './LocationSetting';
 
 interface SettingsPageProps {
   onBack: () => void;
@@ -108,6 +109,7 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
           <section>
             <SectionHeading>Weather</SectionHeading>
             <SettingsCard>
+              <LocationSetting />
               <SettingsRow>
                 <div>
                   <p className="text-sm font-medium text-white">Temperature Unit</p>
