@@ -1,12 +1,41 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { zustandChromeStorage } from '@/shared/storage';
 import { useSettingsStore } from './settings-store';
+import { getBackgroundStyle } from '@/shared/utils/background';
 import type { ManualLocation } from '@/shared/types/location';
 
 const LAGOS: ManualLocation = { name: 'Lagos', label: 'Lagos, Lagos, Nigeria', lat: 6.45, lng: 3.4 };
 
 beforeEach(() => {
   useSettingsStore.setState({ manualLocation: null });
+});
+
+describe('settings store background mirror', () => {
+  it('should mirror the selected background to localStorage', () => {
+    useSettingsStore.getState().setBackgroundId('ocean');
+
+    expect(localStorage.getItem('new-day:bg')).toBe(getBackgroundStyle('ocean', ''));
+  });
+
+  it('should mirror the persisted background after hydration even when it equals the default', async () => {
+    useSettingsStore.setState({ backgroundId: 'sunrise' });
+    localStorage.removeItem('new-day:bg');
+    await zustandChromeStorage.setItem(
+      'new-day:settings',
+      JSON.stringify({ state: { backgroundId: 'sunrise' }, version: 0 })
+    );
+
+    await useSettingsStore.persist.rehydrate();
+
+    expect(localStorage.getItem('new-day:bg')).toBe(getBackgroundStyle('sunrise', ''));
+  });
+
+  it('should mirror the solid color when the solid background is selected', () => {
+    useSettingsStore.getState().setBackgroundSolidColor('#223344');
+    useSettingsStore.getState().setBackgroundId('solid');
+
+    expect(localStorage.getItem('new-day:bg')).toBe('#223344');
+  });
 });
 
 describe('settings store manual location', () => {

@@ -45,3 +45,14 @@ export function getBackgroundStyle(id: BackgroundId, solidColor: string): string
   const preset = BACKGROUND_PRESETS.find((p) => p.id === id);
   return preset?.gradient ?? BACKGROUND_PRESETS[0]!.gradient;
 }
+
+export const BACKGROUND_MIRROR_KEY = 'new-day:bg';
+
+// Sync copy of the resolved background so public/early-background.js can paint it before React mounts.
+export function mirrorBackground(id: BackgroundId, solidColor: string): void {
+  try {
+    localStorage.setItem(BACKGROUND_MIRROR_KEY, getBackgroundStyle(id, solidColor));
+  } catch {
+    // storage unavailable: first paint falls back to the dark base color
+  }
+}

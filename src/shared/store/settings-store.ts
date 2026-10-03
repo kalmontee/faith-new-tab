@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { zustandChromeStorage } from '@/shared/storage';
+import { mirrorBackground } from '@/shared/utils/background';
 import type { TemperatureUnit } from '@/shared/types/temperature';
 import type { BackgroundId } from '@/shared/types/background-presets';
 import type { ManualLocation } from '@/shared/types/location';
@@ -47,3 +48,11 @@ export const useSettingsStore = create<SettingsState>()(
     }
   )
 );
+
+useSettingsStore.subscribe((state, prev) => {
+  if (state.backgroundId !== prev.backgroundId || state.backgroundSolidColor !== prev.backgroundSolidColor) {
+    mirrorBackground(state.backgroundId, state.backgroundSolidColor);
+  }
+});
+
+useSettingsStore.persist.onFinishHydration((state) => mirrorBackground(state.backgroundId, state.backgroundSolidColor));
