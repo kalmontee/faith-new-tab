@@ -27,14 +27,14 @@ A faith-centered Chrome extension that replaces the New Tab page with a personal
 
 ## Documentation Index
 
-| File                                           | Contents                                                                                     |
-| ---------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| File                                           | Contents                                                                                              |
+| ---------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
 | [docs/architecture.md](docs/architecture.md)   | Requirements, capacity budgets, system architecture, folder structure, patterns, data flow, tradeoffs |
-| [docs/tech-stack.md](docs/tech-stack.md)       | Every dependency with rationale                                                              |
-| [docs/modules.md](docs/modules.md)             | Module registry spec, per-module requirements, caching rules                                 |
-| [docs/design-system.md](docs/design-system.md) | Visual design spec extracted from the mockup — layout grid, colors, typography, card anatomy |
-| [docs/roadmap.md](docs/roadmap.md)             | Phased development plan with deliverables per phase                                          |
-| [docs/security.md](docs/security.md)           | Security audit — manifest permissions, MV3 CSP, third-party API validation, dependency findings |
+| [docs/tech-stack.md](docs/tech-stack.md)       | Every dependency with rationale                                                                       |
+| [docs/modules.md](docs/modules.md)             | Module registry spec, per-module requirements, caching rules                                          |
+| [docs/design-system.md](docs/design-system.md) | Visual design spec extracted from the mockup — layout grid, colors, typography, card anatomy          |
+| [docs/roadmap.md](docs/roadmap.md)             | Phased development plan with deliverables per phase                                                   |
+| [docs/security.md](docs/security.md)           | Security audit — manifest permissions, MV3 CSP, third-party API validation, dependency findings       |
 
 ---
 
