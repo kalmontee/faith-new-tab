@@ -36,15 +36,15 @@ interface ModuleDefinition {
 
 ### Bible Verse
 
-| Field     | Value                                                                                                                                                                          |
-| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| ID        | `verse`                                                                                                                                                                        |
-| Grid area | Center, large card                                                                                                                                                             |
-| Refresh   | Daily                                                                                                                                                                          |
-| Network   | Yes (API fetch), cached offline                                                                                                                                                |
-| Storage   | Cached verse (24h TTL)                                                                                                                                                         |
+| Field     | Value                                                                                                                         |
+| --------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| ID        | `verse`                                                                                                                       |
+| Grid area | Center, large card                                                                                                            |
+| Refresh   | Daily                                                                                                                         |
+| Network   | Yes (API fetch), cached offline                                                                                               |
+| Storage   | Cached verse (24h TTL)                                                                                                        |
 | Behavior  | Shows OurManna's Verse of the Day with large quote typography, the reference below (e.g. "Philippians 4:13"). Verses are NIV. |
-| Settings  | None (OurManna serves NIV only)                                                                                                                                                |
+| Settings  | None (OurManna serves NIV only)                                                                                               |
 
 ### Weather
 
@@ -85,13 +85,13 @@ interface ModuleDefinition {
 
 ### Today's Gratitude
 
-| Field     | Value                                                                              |
-| --------- | ---------------------------------------------------------------------------------- |
-| ID        | `gratitude`                                                                        |
-| Grid area | Middle right card                                                                  |
-| Refresh   | Never (user-entered)                                                               |
-| Network   | No                                                                                 |
-| Storage   | IndexedDB — daily gratitude entries                                                |
+| Field     | Value                                                                                                                                                                                                                                                                         |
+| --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ID        | `gratitude`                                                                                                                                                                                                                                                                   |
+| Grid area | Middle right card                                                                                                                                                                                                                                                             |
+| Refresh   | Never (user-entered)                                                                                                                                                                                                                                                          |
+| Network   | No                                                                                                                                                                                                                                                                            |
+| Storage   | IndexedDB — daily gratitude entries                                                                                                                                                                                                                                           |
 | Behavior  | A text area for today's gratitude entry, one entry per day. The bottom action shows a plus icon with "Add a Gratitude" (matching Prayer's plus icon with "Add a Request") when today is empty and switches to "Edit" once an entry exists. Click away to save, Esc to cancel. |
 
 ### To-Do List
