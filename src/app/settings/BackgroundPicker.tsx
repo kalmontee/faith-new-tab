@@ -36,7 +36,8 @@ export function BackgroundPicker({
             )}
             style={{ background: preset.gradient }}
             aria-label={preset.label}
-            aria-pressed={value === preset.id}>
+            aria-pressed={value === preset.id}
+          >
             {value === preset.id && <SelectedBadge />}
             <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent px-2 pb-1.5 pt-4 text-left text-xs font-medium text-white">
               {preset.label}
@@ -53,7 +54,8 @@ export function BackgroundPicker({
           )}
           style={{ background: solidColor }}
           aria-label="Solid color"
-          aria-pressed={value === 'solid'}>
+          aria-pressed={value === 'solid'}
+        >
           {value === 'solid' && <SelectedBadge />}
           <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent px-2 pb-1.5 pt-4 text-left text-xs font-medium text-white">
             Solid

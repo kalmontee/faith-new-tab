@@ -30,7 +30,8 @@ function HeaderIconButton({
         'text-ink-secondary hover:text-white transition-colors duration-150',
         'hover:bg-white/10',
         className
-      )}>
+      )}
+    >
       {children}
     </button>
   );
@@ -45,7 +46,8 @@ export function DashboardHeader({ onSettingsClick }: DashboardHeaderProps) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="mx-auto flex w-full max-w-[1200px] shrink-0 items-center justify-between px-8 pt-6 pb-2">
+      className="mx-auto flex w-full max-w-[1200px] shrink-0 items-center justify-between px-8 pt-6 pb-2"
+    >
       {/* App identity */}
       <div className="flex items-center gap-2.5">
         <Sprout size={20} className="text-gold" aria-hidden />
