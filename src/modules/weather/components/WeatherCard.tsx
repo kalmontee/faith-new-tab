@@ -1,6 +1,6 @@
 import { createElement } from 'react';
-
 import { ArrowDown, ArrowUp, MapPin } from 'lucide-react';
+
 import { Card } from '@/shared/ui/card';
 import { useViewStore } from '@/shared/store/view-store';
 import { useWeather } from '../hooks/use-weather';

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-
 import { useQuery } from '@tanstack/react-query';
+
 import { useSettingsStore } from '@/shared/store/settings-store';
 import { getWeatherData } from '../services/weather-service';
 import type { WeatherData } from '../types';
